@@ -1,0 +1,19 @@
+import psycopg2
+
+
+conn = psycopg2.connect(database = "SmartCities25", 
+                        user = "postgres", 
+                        host= '100.116.69.214',
+                        password = "Tn#2SKSS25",
+                        port = 5432)
+
+
+cur = conn.cursor()
+
+cur.execute("select * from blinds")
+result = cur.fetchall()
+
+for row in result:
+    print(row)
+cur.close()
+conn.close()
