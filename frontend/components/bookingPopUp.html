@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Platzbuchung</title>
+    </head>
+    <body>
+        <h2>Bitte wählen Sie einen Paltz aus</h2>
+        <!-- only for SR1 and SR2 -->
+        {% for room in rooms %}
+            <div>
+                <h3>{{ room.name }}</h3>
+                <div></div>
+                {% for seat in room.seats %}
+                    <form method="post" action="{% if seat.occupied &}/release{%else%}/book{%endif%}">
+                        <label>
+                            <input type="checkbox" name="seat_checkbox" value="{{ seat.id }}" {% if seat.occupied %}checked{% endif %}>
+                            {{ seat.name }} - {% if seat.occupied %}Belegt{% else %}Frei{% endif %}
+                        </label>                        
+                        <input type="hidden" name="seat_id" value="{{ seat.id }}">
+                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                        <button class="btn seat{%if seat.occupied%}occupied{%else%}free{%endif%}" type="submit">
+                    </form>
+                {%endfor%}
+                <!-- <button type="button" onclick="bookRoom('{{ room.id }}')">Buchen</button> -->
+            </div>
+        {%endfor%}
+        
+    </body>
+</html>

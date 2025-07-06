@@ -9,11 +9,34 @@ conn = psycopg2.connect(database = "SmartCities25",
 
 
 cur = conn.cursor()
+# Execute SQL queries to fetch data from the database
+cur.execute("select * from public.rooms")
+result_rooms = cur.fetchall()
+cur.execute("select * from public.seatoccupied")
+result_seat = cur.fetchall()
+cur.execute("select * from public.airconditioning")
+result_aircon = cur.fetchall()
+cur.execute("select * from public.blinds")
+result_blinds = cur.fetchall()
+cur.execute("select * from public.door")
+result_door = cur.fetchall()
+cur.execute("select * from public.humidity")
+result_humidity = cur.fetchall()
+cur.execute("select * from public.lamps")
+result_lamps = cur.fetchall()
+cur.execute("select * from public.sunlight")
+result_sunlight = cur.fetchall()
+cur.execute("select * from public.temperature")
+result_temperature = cur.fetchall()
+cur.execute("select * from public.volumelevel")
+result_volume = cur.fetchall()
 
-cur.execute("select * from blinds")
-result = cur.fetchall()
-
-for row in result:
+for row in result_rooms:
     print(row)
+for row in result_aircon:
+    print(row)
+
+# for row in result_seat:
+#     print(row)
 cur.close()
 conn.close()
