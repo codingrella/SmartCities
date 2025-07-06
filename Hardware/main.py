@@ -7,11 +7,11 @@ Created on Sun Jul  6 11:44:35 2025
 
 import grovepi
 
-from Sensors.LightSensor import * 
-from Sensors.PIR import * 
-from Sensors.SoundSensor import * 
-from Sensors.Button import * 
-from Actuators.LCD import * 
+# import Sensors.LightSensor as LightSensor
+# import Sensors.PIR as PIR
+# import Sensors.SoundSensor as SoundSensor
+# import Sensors.Button as Button
+# import Actuators.LCD as LCD
 
 
 ports = {
@@ -23,15 +23,15 @@ ports = {
 
 
 if __name__ == "__main__":
-    while true:
-        lightLevel = LightSensor.getData(ports['LightSensor'])
+    while True:
+        lightLevel = grovepi.analogRead(ports['LightSensor'])
         print("LIGHT LEVEL:\t" + lightLevel)
-        noiseLevel = SoundSensor.getData(ports['SoundSensor'])
-        print("LIGHT LEVEL:\t" + noiseLevel)
-        motionLevel = PIR.getData(ports['PIR'])
-        print("LIGHT LEVEL:\t" + motionLevel)
-        sitting = Button.getData(ports['Button'])
-        print("LIGHT LEVEL:\t" + sitting)
+        noiseLevel = grovepi.analogRead(ports['SoundSensor'])
+        print("NOISE LEVEL:\t" + noiseLevel)
+        motionLevel = grovepi.analogRead(ports['PIR'])
+        print("MOTION LEVEL:\t" + motionLevel)
+        sitting = grovepi.analogRead(ports['Button'])
+        print("OCCUPIED:\t" + sitting)
         
-        text = LCD.getNoiseLevelText(noiseLevel)
-        LCD.writeData(text)
+       # text = LCD.getNoiseLevelText(noiseLevel)
+       # LCD.writeData(text)
