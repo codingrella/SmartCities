@@ -1,2 +1,2 @@
-sudo docker build --tag 'room-pi' -f pi.Dockerfile .
-sudo docker run --privileged --network host room-pi
+sudo docker build --tag 'smart-lib' -f pi.Dockerfile .
+sudo docker run --privileged --network host smart-lib
