@@ -22,8 +22,8 @@ def getNoiseLevelText(noiseLevel):
     
     print(noiseScale)
     
-    text += ''.join([chr(219)] * noiseScale)
-    text += ''.join([chr(255)] * (12-noiseScale))
+    text += ''.join([chr(255)] * noiseScale)
+    text += ''.join([chr(219)] * (12-noiseScale))
     
     if noiseScale <= 3:
         text += "  <3"
