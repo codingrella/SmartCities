@@ -3,6 +3,7 @@
 
 
 import grovepi
+import math
 
 from SensorInterfaces import DigitalSensorInterface
 from SensorInterfaces import AnalogSensorInterface
@@ -16,7 +17,8 @@ analogPorts = {
 
 digitalPorts = {
         'PIR': 2,
-        'Button': 8
+        'Button': 8,
+        'Temp+Humidity': 4
         }
 
 
@@ -43,4 +45,9 @@ if __name__ == "__main__":
         text = getNoiseLevelText(noiseLevel)
         print('', flush=True)
         writeDataToLCD(text)
+        
+        time.sleep(1)
+        [temp,humidity] = grovepi.dht(digitalPorts['Temp+Humidity'],blue)  
+        if math.isnan(temp) == False and math.isnan(humidity) == False:
+            print("temp = %.02f C humidity =%.02f%%"%(temp, humidity))
         
