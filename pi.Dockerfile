@@ -10,6 +10,6 @@ COPY ./Hardware ./Hardware
 # COPY ./Software .
 
 # Make sure the entry point can be executed
-RUN chmod +x main.py
+RUN chmod +x ./Hardware/main.py
 
-CMD ["python3", "main.py"]
+CMD ["python3", "./Hardware/main.py"]
