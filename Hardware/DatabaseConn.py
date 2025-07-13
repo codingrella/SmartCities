@@ -88,43 +88,20 @@ class AbstractedDatabaseInterface:
             }
     
     def updateMotion(self, value):
-        self.cur.execute(f""" UPDATE public.roomdata
-                        SET motion={value==1}
-                        WHERE RoomID='StudyRoom';
-                    """) 
-        self.conn.commit()   
-        
+        return  
         
     def updateLightLevel(self, value):
-        self.cur.execute(f""" UPDATE public.roomdata
-                        SET lightlevel={value}
-                        WHERE RoomID='StudyRoom';
-                    """) 
-        self.conn.commit()   
+        return 
         
     def updateNoiseLevel(self, value):
-        self.cur.execute(f""" UPDATE public.roomdata
-                        SET noiselevel={value}
-                        WHERE RoomID='StudyRoom';
-                    """) 
-        self.conn.commit()  
+        return 
         
     def updateTemperature(self, value):
-        self.cur.execute(f""" UPDATE public.roomdata
-                        SET temperature={value}
-                        WHERE RoomID='StudyRoom';
-                    """) 
-        self.conn.commit() 
-        
+        return 
         
     def updateHumidity(self, value):
-        self.cur.execute(f""" UPDATE public.roomdata
-                        SET humidity={value}
-                        WHERE RoomID='StudyRoom';
-                    """) 
-        self.conn.commit() 
+        return
         
-    
     def closeConnection(self):
         self.cur.close()
         self.conn.close()
