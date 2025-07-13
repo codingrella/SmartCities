@@ -1,11 +1,20 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Welcome to the Smart Hub!</title>
+        <title>Welcome to the Think Lounge!</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='Styles/Homepage_style.css') }}">
+
     </head>
     <body>
-        <h1>Welcome to the Smart Hub!</h1>
-        <p>Your one-stop solution for smart building management.</p>
-        <a href="/dashboard">Go to Dashboard</a>
+        <div class="container">
+            <h1>Welcome to the Think Lounge!</h1>
+            <p>Please enter the library.</p>
+            <a href="/dashboard">Go to Dashboard</a>
+            <!-- admin -->
+            <a href="/admin">Go to Admin Page</a>
+        </div>
     </body>
 </html>

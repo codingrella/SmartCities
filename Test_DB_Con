@@ -3,7 +3,7 @@ import psycopg2
 
 conn = psycopg2.connect(database = "SmartCities25", 
                         user = "postgres", 
-                        host= '100.116.69.214',
+                        host= '100.116.154.10',
                         password = "Tn#2SKSS25",
                         port = 5432)
 
@@ -12,20 +12,16 @@ cur = conn.cursor()
 # Execute SQL queries to fetch data from the database
 cur.execute("select * from public.rooms")
 result_rooms = cur.fetchall()
-cur.execute("select * from public.seatoccupied")
-result_seat = cur.fetchall()
-cur.execute("select * from public.airconditioning")
-result_aircon = cur.fetchall()
-cur.execute("select * from public.blinds")
-result_blinds = cur.fetchall()
-cur.execute("select * from public.door")
-result_door = cur.fetchall()
+# cur.execute("select * from public.blinds")
+# result_blinds = cur.fetchall()
+# cur.execute("select * from public.door")
+# result_door = cur.fetchall()
 cur.execute("select * from public.humidity")
 result_humidity = cur.fetchall()
-cur.execute("select * from public.lamps")
-result_lamps = cur.fetchall()
-cur.execute("select * from public.sunlight")
-result_sunlight = cur.fetchall()
+cur.execute("select * from public.lighting")
+result_lighting = cur.fetchall()
+# cur.execute("select * from public.sunlight")
+# result_sunlight = cur.fetchall()
 cur.execute("select * from public.temperature")
 result_temperature = cur.fetchall()
 cur.execute("select * from public.volumelevel")
@@ -33,7 +29,9 @@ result_volume = cur.fetchall()
 
 for row in result_rooms:
     print(row)
-for row in result_aircon:
+for row in result_lighting:
+    print(row)
+for row in result_humidity:
     print(row)
 
 # for row in result_seat:
