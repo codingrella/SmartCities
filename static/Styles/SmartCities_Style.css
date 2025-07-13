@@ -1,0 +1,33 @@
+/* Global Font Settings */
+* {
+    font-family: 'Urbanist', sans-serif;
+}
+
+body {
+    font-family: 'Urbanist', sans-serif;
+}
+
+.seat {
+        width:60px;
+        height:60px;
+        margin: 5px;
+        background-color: #f0f0f0;
+    }
+
+    .seat.occupied {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .seat.available {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+    }

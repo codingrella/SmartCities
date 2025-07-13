@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Platzbuchung</title>
+        <title>Admin Page</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="{{ url_for('static', filename='Styles/BookingSystem_style.css') }}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='Styles/adminPage_style.css') }}">
     </head>
     <body>
-        <div class="booking-container">
-            <h2>Book Your Seat</h2>
+        <!-- same content as dashboard.html but with admin functionalities -->
+        <div class="container">
+            <div class="header-section">
+                <h1>Admin Dashboard</h1>
+                <p>Manage the library and its resources.</p>
+            </div>
+            <div class="row">
             <!-- Booking form with User ID and Password-->
+             <div class="card">
              <div class="user-authentication">
                 <div class="form-group">
                     <label for="userId">User ID:</label>
@@ -65,8 +72,20 @@
                     {% endfor %}
                 </select>
             </div>
+            <!-- booking information on selected seat -->
+             <div class="booking-info">
+                <div class="form-group">
+                    <label for="bookingInfo">Booking Information:</label>
+                    <div class="booking-info-textarea">
+                        <textarea id="bookingInfo" name="bookingInfo" rows="4" placeholder="Booking information will be displayed here..." readonly></textarea>
+                    </div>
+                </div>
+             </div>
+            </div>
+
 
             <!-- Seating Plan -->
+            <div class="card">
             <div class="seating-section">
                 <h3>Select Your Seat</h3>
                 <div class="seat-legend">
@@ -105,9 +124,10 @@
                 <button id="bookButton" onclick="bookSelectedSeat()" disabled>Book Selected Seat</button>
                 <button onclick="window.close()">Cancel</button>
             </div>
+            </div>
+            </div>
         </div>
-
-        <!-- Hidden data for JavaScript -->
+<!-- Hidden data for JavaScript -->
         <script type="application/json" id="roomsData">{{ rooms | tojson }}</script>
         <script type="application/json" id="seatsData">{{ seats | tojson }}</script>
         <script type="application/json" id="timeSlotsData">{{ time_slots | tojson }}</script>
@@ -209,55 +229,8 @@
         // Save selected occupied seat and Id
         localStorage.setItem('selectedSeat', JSON.stringify(selectedSeat));
         alert('Seat {selectedSeat.name} booked succesfully!');
-
-    //function to secure login and encode password
-    function secureLogin() {
-        const userId = document.getElementById('userId').value;
-        const password = document.getElementById('password').value;
-        if (!userId || !password) {
-            alert('Bitte geben Sie Ihre Benutzer-ID und Ihr Passwort ein.');
-            return;
-        }
-
-        // Encode password with Fernet
-        const fernet = new cryptography.fernet.Fernet('your-secret-key');
-        const encodedPassword = fernet.encrypt(password);
-        console.log(`User ID: ${userId}, Encoded Password: ${encodedPassword}`);
     }
-
-
-        // fetch('/api/book-seat', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify({
-        //         seatId: selectedSeat.id,
-        //         roomId: selectedSeat.roomId,
-        //         seatName: selectedSeat.name
-        //     })
-        // })
-        // .then(response => response.json())
-        // .then(data => {
-        //     if (data.success) {
-        //         alert(`Platz ${selectedSeat.name} wurde erfolgreich gebucht!`);
-        //         // Mark seat as occupied
-        //         event.target.classList.remove('free', 'selected');
-        //         event.target.classList.add('occupied');
-        //         event.target.disabled = true;
-        //         selectedSeat = null;
-        //         document.getElementById('bookButton').disabled = true;
-        //     } else {
-        //         alert(`Fehler beim Buchen: ${data.message}`);
-        //     }
-        // })
-        // .catch(error => {
-        //     console.error('Booking error:', error);
-        //     alert('Fehler beim Buchen des Platzes.');
-        // });
-    }
-
-    // Add time validation
+        // Add time validation
     function validateTimeSelection() {
         const startTime = document.getElementById('startTime').value;
         const endTime = document.getElementById('endTime').value;
@@ -288,4 +261,60 @@
         startTimeSelect.addEventListener('change', validateTimeSelection);
         endTimeSelect.addEventListener('change', validateTimeSelection);
     });
+
+    function displayBookingInfo() {
+        const bookingInfo = document.getElementById('bookingInfo');
+        const bookingDate = document.getElementById('bookingDate').value;
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+        const roomSelect = document.getElementById('rooms');
+        const selectedRoomName = roomSelect.options[roomSelect.selectedIndex].text;
+        
+        if (bookingDate && startTime && endTime && selectedSeat) {
+            bookingInfo.value = `Room: ${selectedRoomName}\nSeat: ${selectedSeat.name}\nDate: ${bookingDate}\nStart Time: ${startTime}\nEnd Time: ${endTime}`;
+        } else {
+            bookingInfo.value = 'Please fill in all fields.';
+        }
+    }
+
+    // LogIn with rsa to encode and decode
+    // function secureLogin() {
+    //     //generate rsa keys
+    //     const { publicKey, privateKey } = rsa.generateKeyPair(1024);
+    //     const username = document.getElementById('username').value;
+    //     const password = document.getElementById('password').value;
+    //     if (!username || !password) {
+    //         alert('Please enter both username and password');
+    //         return;
+    //     }
+    //     // Encrypt username and password
+    //     const encryptedUsername = rsa.encrypt(username, publicKey);
+    //     const encryptedPassword = rsa.encrypt(password, publicKey);
+    //     // Send encrypted data to server
+    //     fetch('/login', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify({
+    //             username: encryptedUsername,
+    //             password: encryptedPassword
+    //         })
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.success) {
+    //             alert('Login successful!');
+    //             // Redirect to dashboard or perform other actions
+    //             window.location.href = '/dashboard';
+    //         } else {
+    //             alert('Login failed: ' + data.message);
+    //         }
+    //     })
+    //     .catch(error => {
+    //         console.error('Error during login:', error);
+    //         alert('An error occurred during login. Please try again.');
+    //     });
+    // }
+
 </script>
