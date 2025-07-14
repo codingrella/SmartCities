@@ -9,7 +9,9 @@ from SensorInterfaces import DigitalSensorInterface
 from SensorInterfaces import AnalogSensorInterface
 from Actuators.LCD import * 
 
-from DatabaseConn import NumericDatabaseInterface, AbstractedDatabaseInterface
+# from DatabaseConn import NumericDatabaseInterface, AbstractedDatabaseInterface
+
+from MQTTInterface import MQTTPublisher_Sensor as pub_Sensor
 
 
 analogPorts = {
@@ -24,40 +26,56 @@ digitalPorts = {
         }
 
 
+# pub = MQTTPublisher_Sensor('SR_1', 'test')
+# pub.run('HELLO')
+# pub.disconnect()
+
 if __name__ == "__main__":
-    dbInterface = NumericDatabaseInterface()
+    # dbInterface_num = NumericDatabaseInterface()
     lightSensor = AnalogSensorInterface(analogPorts['LightSensor'])
     soundSensor = AnalogSensorInterface(analogPorts['SoundSensor'])
     
     PIR = DigitalSensorInterface(digitalPorts['PIR'])
     # button = DigitalSensorInterface(digitalPorts['Button'])
     
+    
+    pub_LightSensor_01 = pub_Sensor('SR_1', 'Light Sensor')
+    pub_SoundSensor_01 = pub_Sensor('SR_1', 'Sound Sensor')
+    pub_MotionSensor_01 = pub_Sensor('SR_1', 'Motion Sensor')
+    pub_TempSensor_01 = pub_Sensor('SR_1', 'Temperature Sensor')
+    pub_HumiditySensor_01 = pub_Sensor('SR_1', 'Humidity Sensor')
+    
     while True:
         time.sleep(1)
         
         movement = PIR.getData()
-        dbInterface.updateMotion(movement)
-        #print("MOVEMENT:\t" + str(movement))
+        pub_MotionSensor_01.run(movement)
+        # dbInterface_num.updateMotion(movement)
+        # print("MOVEMENT:\t" + str(movement))
         
         # sitting = button.getData()
         # print("SITTING:\t" + str(sitting))
         
         lightLevel = lightSensor.getData()
-        dbInterface.updateLightLevel(lightLevel)
+        pub_LightSensor_01.run(lightLevel)
+        # dbInterface_num.updateLightLevel(lightLevel)
         # print("LIGHT LEVEL:\t" + str(lightLevel))
         
         noiseLevel = soundSensor.getData()
-        dbInterface.updateNoiseLevel(noiseLevel)
+        pub_SoundSensor_01.run(noiseLevel)
+        # dbInterface_num.updateNoiseLevel(noiseLevel)
         #print("NOISE LEVEL:\t" + str(noiseLevel))
         
         text = getNoiseLevelText(noiseLevel)
         writeDataToLCD(text)
         
         time.sleep(1)
-        [temp,humidity] = grovepi.dht(digitalPorts['Temp+Humidity'],0)  
+        [temp, humidity] = grovepi.dht(digitalPorts['Temp+Humidity'],0)  
         if math.isnan(temp) == False and math.isnan(humidity) == False:
-            dbInterface.updateTemperature(temp)
-            dbInterface.updateHumidity(humidity)
+            pub_TempSensor_01.run(temp)
+            pub_HumiditySensor_01.run(humidity)
+            # dbInterface_num.updateTemperature(temp)
+            # dbInterface_num.updateHumidity(humidity)
             # print("temp = %.02f C humidity =%.02f%%"%(temp, humidity))
             
             
