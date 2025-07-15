@@ -42,7 +42,7 @@ class MQTTPublisher:
         
         topic = f"library/{room}/{deviceType}/{device}"
 
-        msg = str({f'{deviceType}': device, 'Value': value, 'TimeStamp': current_time})
+        msg = str({f'Device': device, 'Value': value, 'TimeStamp': current_time})
         result = self.client.publish(topic, msg)
     
     
