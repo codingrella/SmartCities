@@ -20,8 +20,6 @@ def getNoiseLevelText(noiseLevel):
     
     noiseScale = int(noisePercentage / 8.3)
     
-    print(noiseScale)
-    
     text += ''.join([chr(255)] * noiseScale)
     text += ''.join([chr(219)] * (12-noiseScale))
     
