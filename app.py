@@ -11,6 +11,7 @@ import time
 import cryptography.fernet
 import rsa
 import hashlib
+import paho.mqtt.client as mqtt_client
 
 app = Flask(__name__, template_folder='template', static_folder='static')
 socketio = SocketIO(app)
@@ -34,6 +35,40 @@ def get_connection():
     except Exception as e:
         print(f"Unexpected database error: {e}")
         return None
+
+class MQTTSubscriber:
+    def _init_(self):
+        self.broker = '192.168.63.237'
+        self.port = 1883
+        self.topic = f"library/SR_1/Sensor/#"
+        self.client_id = f'subscribe-{random.randint(0, 100)}'
+        # self.username = 'emqx'
+        # self.password = 'public'
+        
+        self.client = self.connect_mqtt()
+        
+    def connect_mqtt(self):
+    
+        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, self.client_id)
+        # client.username_pw_set(self.username, self.password)
+        # client.on_connect = on_connect
+        client.connect(self.broker, self.port)
+        return client
+    
+    def subscribe(self):
+        def on_message(client, userdata, msg):
+            print(f"Received {msg.payload.decode()} from {msg.topic} topic")
+    
+        self.client.subscribe(self.topic)
+        self.client.on_message = on_message
+    
+    
+    def run(self):
+        self.subscribe()
+        self.client.loop_forever()
+        
+sub = MQTTSubscriber()
+sub.run()
 
 @app.route('/')
 def home():
