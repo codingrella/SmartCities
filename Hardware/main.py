@@ -39,11 +39,11 @@ if __name__ == "__main__":
     # button = DigitalSensorInterface(digitalPorts['Button'])
     
     
-    pub_LightSensor_01 = pub_Sensor('SR_1', 'Light Sensor')
-    pub_SoundSensor_01 = pub_Sensor('SR_1', 'Sound Sensor')
-    pub_MotionSensor_01 = pub_Sensor('SR_1', 'Motion Sensor')
-    pub_TempSensor_01 = pub_Sensor('SR_1', 'Temperature Sensor')
-    pub_HumiditySensor_01 = pub_Sensor('SR_1', 'Humidity Sensor')
+    pub_LightSensor_01 = pub_Sensor('SR_1', 'Light_Sensor')
+    pub_SoundSensor_01 = pub_Sensor('SR_1', 'Sound_Sensor')
+    pub_MotionSensor_01 = pub_Sensor('SR_1', 'Motion_Sensor')
+    pub_TempSensor_01 = pub_Sensor('SR_1', 'Temperature_Sensor')
+    pub_HumiditySensor_01 = pub_Sensor('SR_1', 'Humidity_Sensor')
     
     while True:
         time.sleep(1)
@@ -72,11 +72,11 @@ if __name__ == "__main__":
         time.sleep(1)
         [temp, humidity] = grovepi.dht(digitalPorts['Temp+Humidity'],0)  
         if math.isnan(temp) == False and math.isnan(humidity) == False:
-            pub_TempSensor_01.run(temp)
-            pub_HumiditySensor_01.run(humidity)
+            pub_TempSensor_01.run("%.02f"%temp)
+            pub_HumiditySensor_01.run("%.02f"%humidity)
             # dbInterface_num.updateTemperature(temp)
             # dbInterface_num.updateHumidity(humidity)
-            # print("temp = %.02f C humidity =%.02f%%"%(temp, humidity))
+            # print("temp =  C humidity =%.02f%%"%(temp, humidity))
             
             
         
