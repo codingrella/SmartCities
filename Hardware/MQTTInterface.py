@@ -8,15 +8,15 @@ from paho.mqtt import client as mqtt_client
 
 
 
+BROKER_IP = '192.168.188.40'
+PORT = 1883
+
 
 
 class MQTTPublisher:
     def __init__(self, room, deviceType, topic):
-        self.deviceType = deviceType
-        self.deviceName = topic
-        self.broker = '192.168.188.40'
-        self.port = 1883
-        self.topic = f"library/{room}/{deviceType}/{topic}"
+        self.broker = BROKER_IP
+        self.port = PORT
         
         self.client_id = f'publish-{random.randint(0, 1000)}'
         # self.username = 'emqx'
@@ -36,26 +36,28 @@ class MQTTPublisher:
         self.client.disconnect()
         
         
-    def publish(self, value):
+    def publish(self, room, deviceType, topic, value):
         t = time.localtime()
         current_time = time.strftime("%H:%M:%S", t)
+        
+        topic = f"library/{room}/{deviceType}/{topic}"
 
         msg = str({f'{self.deviceType}': self.deviceName, 'Value': value, 'TimeStamp': current_time})
         result = self.client.publish(self.topic, msg)
     
     
-    def run(self, value):
+    def run(self, room, deviceType, topic, value):
         self.client.loop_start()
-        self.publish(value)
+        self.publish(room, deviceType, topic, value)
         self.client.loop_stop()
         
 
 
 class MQTTSubscriber:
-    def __init__(self, room, deviceType, topic):
-        self.broker = '192.168.188.40'
-        self.port = 1883
-        self.topic = self.topic = f"library/{room}/{deviceType}/{topic}"
+    def __init__(self):
+        self.broker = BROKER_IP
+        self.port = PORT
+        
         self.client_id = f'subscribe-{random.randint(0, 100)}'
         # self.username = 'emqx'
         # self.password = 'public'
@@ -72,15 +74,17 @@ class MQTTSubscriber:
         return client
     
     
-    def subscribe(self):
+    def subscribe(self, room, deviceType, topic):
         def on_message(client, userdata, msg):
             print(msg.payload.decode())
+            
+        self.topic = self.topic = f"library/{room}/{deviceType}/{topic}"
     
         self.client.subscribe(self.topic)
         self.client.on_message = on_message
     
     
-    def run(self):
-        self.subscribe()
+    def run(self, room, deviceType, topic):
+        self.subscribe(room, deviceType, topic)
         self.client.loop_forever()
         
