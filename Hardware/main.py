@@ -80,5 +80,5 @@ if __name__ == "__main__":
             
             
         
-        print('', flush=True)
+        print('<3', flush=True)
         
