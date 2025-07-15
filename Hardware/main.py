@@ -11,7 +11,7 @@ from Actuators.LCD import *
 
 # from DatabaseConn import NumericDatabaseInterface, AbstractedDatabaseInterface
 
-from MQTTInterface import MQTTPublisher_Sensor as pub_Sensor
+from MQTTInterface import MQTTPublisher
 
 
 analogPorts = {
@@ -39,11 +39,11 @@ if __name__ == "__main__":
     # button = DigitalSensorInterface(digitalPorts['Button'])
     
     
-    pub_LightSensor_01 = pub_Sensor('SR_1', 'Light_Sensor')
-    pub_SoundSensor_01 = pub_Sensor('SR_1', 'Sound_Sensor')
-    pub_MotionSensor_01 = pub_Sensor('SR_1', 'Motion_Sensor')
-    pub_TempSensor_01 = pub_Sensor('SR_1', 'Temperature_Sensor')
-    pub_HumiditySensor_01 = pub_Sensor('SR_1', 'Humidity_Sensor')
+    pub_LightSensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Light_Sensor')
+    pub_SoundSensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Sound_Sensor')
+    pub_MotionSensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Motion_Sensor')
+    pub_TempSensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Temperature_Sensor')
+    pub_HumiditySensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Humidity_Sensor')
     
     while True:
         time.sleep(1)
