@@ -11,7 +11,14 @@
     <body>
         <div class="container">
             <div class="header-section">
-                <h1>The Think Lounge Dashboard</h1>
+                <div class="row">
+                    <h1>The Think Lounge Dashboard</h1>
+                    <div class="button">
+                    <!-- RFID Scanner -->
+                    <!-- button to simulate the scanning of an RFID tag -->
+                    <button onclick="startCheckIn()">Check In</button>
+                    </div>
+                </div>
             </div>
             <div class="row">
                 <div class="card dashboard-card-big">
@@ -298,4 +305,24 @@ function initializeLightLevel() {
     // Refresh data periodically
     setInterval(loadSensorData, 30000); // Every 30 seconds
     setInterval(loadSeatingPlan, 60000); // Every minute
+
+    function startCheckIn() {
+        // Check In function
+        //change the button color and text
+        const button = document.querySelector('.button button');
+        button.style.backgroundColor = '#28a745'; // Green color
+        button.textContent = 'Checked In';
+    
+        //check out --> change the button back to original color and text
+        button.onclick = function() {
+            button.style.backgroundColor = '#007bff'; // Original color
+            button.textContent = 'Check In';
+        }
+
+        //time stamp for check-in
+        const timestamp = new Date().toLocaleTimeString();
+        console.log('Checked in at:', timestamp);
+
+        //send data to db and change start time to stamped time
+    }
 </script>
