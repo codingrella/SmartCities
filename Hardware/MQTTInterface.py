@@ -36,19 +36,19 @@ class MQTTPublisher:
         self.client.disconnect()
         
         
-    def publish(self, room, deviceType, topic, value):
+    def publish(self, room, deviceType, device, value):
         t = time.localtime()
         current_time = time.strftime("%H:%M:%S", t)
         
-        topic = f"library/{room}/{deviceType}/{topic}"
+        topic = f"library/{room}/{deviceType}/{device}"
 
-        msg = str({f'{deviceType}': topic, 'Value': value, 'TimeStamp': current_time})
+        msg = str({f'{deviceType}': device, 'Value': value, 'TimeStamp': current_time})
         result = self.client.publish(topic, msg)
     
     
-    def run(self, room, deviceType, topic, value):
+    def run(self, room, deviceType, device, value):
         self.client.loop_start()
-        self.publish(room, deviceType, topic, value)
+        self.publish(room, deviceType, device, value)
         self.client.loop_stop()
         
 
@@ -74,17 +74,22 @@ class MQTTSubscriber:
         return client
     
     
-    def subscribe(self, room, deviceType, topic):
-        def on_message(client, userdata, msg):
-            print(msg.payload.decode())
-            
-        self.topic = self.topic = f"library/{room}/{deviceType}/{topic}"
+    def subscribe(self, room, deviceType, device):
+        topic = f"library/{room}/{deviceType}/{device}"
     
-        self.client.subscribe(self.topic)
-        self.client.on_message = on_message
+        self.client.subscribe(topic)
     
     
-    def run(self, room, deviceType, topic):
-        self.subscribe(room, deviceType, topic)
+    def run(self, room, deviceType, device):
+        self.subscribe(room, deviceType, device)
         self.client.loop_forever()
         
+   
+        
+   
+# def on_message(client, userdata, msg):
+#     print(msg.payload.decode())
+    
+# sub = MQTTSubscriber()
+# sub.client.on_message = on_message
+# sub.run('SR_1', 'Sensor', '#')
