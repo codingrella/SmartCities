@@ -10,7 +10,7 @@ from paho.mqtt import client as mqtt_client
 
 
 
-class __MQTTPublisher:
+class MQTTPublisher:
     def __init__(self, room, deviceType, topic):
         self.deviceType = deviceType
         self.deviceName = topic
