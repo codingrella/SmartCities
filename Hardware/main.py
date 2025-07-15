@@ -39,17 +39,13 @@ if __name__ == "__main__":
     # button = DigitalSensorInterface(digitalPorts['Button'])
     
     
-    pub_LightSensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Light_Sensor')
-    pub_SoundSensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Sound_Sensor')
-    pub_MotionSensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Motion_Sensor')
-    pub_TempSensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Temperature_Sensor')
-    pub_HumiditySensor_01 = MQTTPublisher('SR_1', 'Sensor', 'Humidity_Sensor')
+    pub = MQTTPublisher ()
     
     while True:
         time.sleep(1)
         
         movement = PIR.getData()
-        pub_MotionSensor_01.run(movement)
+        pub.run('SR_1', 'Sensor', 'Motion_Sensor', movement)
         # dbInterface_num.updateMotion(movement)
         # print("MOVEMENT:\t" + str(movement))
         
@@ -57,12 +53,12 @@ if __name__ == "__main__":
         # print("SITTING:\t" + str(sitting))
         
         lightLevel = lightSensor.getData()
-        pub_LightSensor_01.run(lightLevel)
+        pub.run('SR_1', 'Sensor', 'Light_Sensor', lightLevel)
         # dbInterface_num.updateLightLevel(lightLevel)
         # print("LIGHT LEVEL:\t" + str(lightLevel))
         
         noiseLevel = soundSensor.getData()
-        pub_SoundSensor_01.run(noiseLevel)
+        pub.run('SR_1', 'Sensor', 'Sound_Sensor', noiseLevel)
         # dbInterface_num.updateNoiseLevel(noiseLevel)
         #print("NOISE LEVEL:\t" + str(noiseLevel))
         
@@ -72,8 +68,8 @@ if __name__ == "__main__":
         time.sleep(1)
         [temp, humidity] = grovepi.dht(digitalPorts['Temp+Humidity'],0)  
         if math.isnan(temp) == False and math.isnan(humidity) == False:
-            pub_TempSensor_01.run("%.02f"%temp)
-            pub_HumiditySensor_01.run("%.02f"%humidity)
+            pub.run('SR_1', 'Sensor', 'Temperature_Sensor', "%.02f"%temp)
+            pub.run('SR_1', 'Sensor', 'Humidity_Sensor', "%.02f"%humidity)
             # dbInterface_num.updateTemperature(temp)
             # dbInterface_num.updateHumidity(humidity)
             # print("temp =  C humidity =%.02f%%"%(temp, humidity))
