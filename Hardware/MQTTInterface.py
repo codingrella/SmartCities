@@ -14,7 +14,7 @@ PORT = 1883
 
 
 class MQTTPublisher:
-    def __init__(self, room, deviceType, topic):
+    def __init__(self):
         self.broker = BROKER_IP
         self.port = PORT
         
@@ -42,8 +42,8 @@ class MQTTPublisher:
         
         topic = f"library/{room}/{deviceType}/{topic}"
 
-        msg = str({f'{self.deviceType}': self.deviceName, 'Value': value, 'TimeStamp': current_time})
-        result = self.client.publish(self.topic, msg)
+        msg = str({f'{deviceType}': topic, 'Value': value, 'TimeStamp': current_time})
+        result = self.client.publish(topic, msg)
     
     
     def run(self, room, deviceType, topic, value):
