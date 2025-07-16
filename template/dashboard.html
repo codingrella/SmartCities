@@ -121,6 +121,66 @@
         <!-- Hidden data for JavaScript -->
         <script type="application/json" id="dashboardRoomsData">{{ rooms | tojson if rooms else '[]' }}</script>
         <script type="application/json" id="dashboardSeatsData">{{ seats | tojson if seats else '[]' }}</script>
+        <!-- MQTT.js library from CDN -->
+        <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+        <script>
+            // MQTT connection setup
+            const mqttBrokerUrl = 'ws://192.168.188.40:9001'; // Example public broker
+            const mqttOptions = {
+                clientId: 'dashboard_' + Math.random().toString(16).substr(2, 8),
+                clean: true,
+                connectTimeout: 4000,
+                reconnectPeriod: 4000,
+            };
+
+            let mqttClient = null;
+
+            function connectMQTT() {
+                mqttClient = mqtt.connect(mqttBrokerUrl, mqttOptions);
+
+                mqttClient.on('connect', function () {
+                    console.log('Connected to MQTT broker');
+
+                    mqttClient.subscribe('library/SR_1/Sensor/#', function (err) {
+                        if (!err) {
+                            console.log('Subscribed to library/SR_1/Sensor');
+                        } else {
+                            console.error('Subscription error:', err);
+                        }
+                    });
+
+                    mqttClient.publish('library/SR_1/Sensor/Outside_Sensor', JSON.parse('{"Device":"Outside_Sensor","Value":0}'), { qos: 1, retain: true });
+
+                    // mqttClient.subscribe('#', function (err) {
+                    //     if (!err) {
+                            // Publish a message to a topic
+                        // mqttClient.publish('library/SR_1/Sensor/#', 'outside_light:0');
+                    //     }
+                    // });
+                });
+
+                mqttClient.on('error', function (err) {
+                    console.error('MQTT connection error:', err);
+                });
+
+                mqttClient.on('reconnect', function () {
+                    console.log('Reconnecting to MQTT broker...');
+                });
+
+                mqttClient.on('message', function (topic, message) {
+                // message is Buffer
+                    console.log(message.toString())
+                })
+                //convert message to string
+                if (typeof message === 'object') {
+                
+                message = JSON.stringify(message);
+                }
+            }
+
+            // Call connectMQTT on page load
+            connectMQTT();
+        </script>
     </body>
 </html>
 
@@ -269,24 +329,13 @@
     console.log('Light level changed to:', text.textContent);
     
     // Optional: Send to server
-    updateLightLevelOnServer(value);
+    PublishLightLevel(value);
 }
 
-function updateLightLevelOnServer(level) {
-    fetch('/api/light-level', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ level: level })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Light level updated on server:', data);
-    })
-    .catch(error => {
-        console.error('Error updating light level:', error);
-    });
+function PublishLightLevel(level) {
+
+
+    
 }
 
 function initializeLightLevel() {

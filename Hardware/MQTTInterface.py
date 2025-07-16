@@ -83,11 +83,15 @@ class MQTTPublisher_Actuator(__MQTTPublisher):
 
 
 
-class __MQTTSubscriber:
-    def __init__(self, room, deviceType, topic):
-        self.broker = '192.168.188.40'
-        self.port = 1883
-        self.topic = self.topic = f"library/{room}/{deviceType}/{topic}"
+class MQTTSubscriber:
+    def _init_(self, room, deviceType, device):
+        # self.broker = BROKER_IP
+        # self.port = PORT
+        
+        self.room = room
+        self.deviceType = deviceType
+        self.device = device
+        
         self.client_id = f'subscribe-{random.randint(0, 100)}'
         # self.username = 'emqx'
         # self.password = 'public'
@@ -96,12 +100,17 @@ class __MQTTSubscriber:
         
         
     def connect_mqtt(self):
-    
         client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, self.client_id)
         # client.username_pw_set(self.username, self.password)
         # client.on_connect = on_connect
         client.connect(self.broker, self.port)
         return client
+    
+    
+    def subscribe(self):
+        topic = f"library/{self.room}/{self.deviceType}/{self.device}"
+    
+        self.client.subscribe(topic)
     
     
     def run(self):
@@ -110,7 +119,7 @@ class __MQTTSubscriber:
         
       
         
-class MQTTSubscriber_Sensor(__MQTTSubscriber):
+class MQTTSubscriber_Sensor(MQTTSubscriber):
     def __init__(self, room, topic):
         self.room = room
         self.sensor = topic
@@ -118,15 +127,15 @@ class MQTTSubscriber_Sensor(__MQTTSubscriber):
         super().__init__(self.room, 'Sensor', self.sensor)
     
     def subscribe(self):
-        def on_message(client, userdata, msg):
-            print(msg.payload.decode())
+        # def on_message(client, userdata, msg):
+        #     print(msg.payload.decode())
     
         self.client.subscribe(self.topic)
-        self.client.on_message = on_message
+        # self.client.on_message = on_message
         
         
         
-class MQTTSubscriber_Actuator(__MQTTSubscriber):
+class MQTTSubscriber_Actuator(MQTTSubscriber):
     def __init__(self, room, topic):
         self.room = room
         self.actuator = topic

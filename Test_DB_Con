@@ -1,7 +1,41 @@
-import psycopg2
-import paho.mqtt as mqtt_client
-import random
+from Hardware.MQTTInterface import MQTTSubscriber_Sensor as Sub_Sensor
 
+import threading
+import json
+
+def run_thread():
+    # Run the MQTT subscriber in a separate thread to avoid blocking Flask
+    mqtt_thread = threading.Thread(target=get_mqtt_data)
+    mqtt_thread.daemon = True  # Ensure thread exits when main program does
+    mqtt_thread.start()
+
+def get_mqtt_data():
+        try:
+            print("Starting MQTT subscriber for sensors...")
+            mqtt_subscriber = Sub_Sensor('SR_1', 'Sensor/#')
+            print("MQTT subscriber initialized")
+            mqtt_subscriber.client.on_message = on_message
+            # mqtt_subscriber.client.loop_start()
+            mqtt_subscriber.run()
+            print("MQTT subscriber started successfully")
+        except Exception as e:
+            print(f"Error starting MQTT subscriber: {e}")
+    
+
+
+def on_message(client, userdata, msg):
+    try:
+        print(f"Received {msg.payload.decode()} from {msg.topic} topic")
+        # sensor_data['time_stamp'].append(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        # Decode the message and update sensor_data
+        # message = json.loads(msg.payload.decode())
+        # if 'Sensor' in message and 'Value' in message:
+        #     sensor_data[message['Sensor']].append(message['Value'])
+        #     socketio.emit('sensor_update', sensor_data)
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+    except Exception as e:
+        print(f"Error processing MQTT message: {e}")
 
 # conn = psycopg2.connect(database = "SmartCities25", 
 #                         user = "postgres", 
