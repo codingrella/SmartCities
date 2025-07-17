@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Jul 12 21:58:09 2025
 
-@author: Vivienne Beck
-"""
 
 import os
 import time
@@ -21,7 +17,9 @@ MAX_RANGE_MOTION_DETECTED = 10            # 5 minutes
 OPENING_HOUR = datetime.strptime('08:00:00', '%H:%M:%S')
 CLOSING_HOUR = datetime.strptime('20:00:00', '%H:%M:%S')
 
-
+DOMAIN_FILE_PATH = "Hardware/PDDL_Files/Domain.pddl"
+PROBLEM_FILE_PATH = "Hardware/PDDL_Files/ProblemFile_SR_1.pddl"
+PLAN_RESULT_PATH = "Hardware/PDDL_Files/Plan.txt"
 
 
 class AIPlannerInterface:
@@ -56,11 +54,12 @@ class AIPlannerInterface:
         
         if 'Sensor' in res['Device']:
             self.sensorValues[res['Device']] = res['Value']
-        elif res['Device'] == 'Motion_Sensor' and res['Value'] == 1:
-            self.time_lastMotionDetected = res['TimeStamp']
-            self.replannedSinceMotionToggle = False
         else:
             self.actuatorValues[res['Device']] = res['Value']
+            
+        if res['Device'] == 'Motion_Sensor' and res['Value'] == 1:
+            self.time_lastMotionDetected = res['TimeStamp']
+            self.replannedSinceMotionToggle = False
     
     
     def createAIProblemFile(self, inits, goals):
@@ -173,6 +172,23 @@ class AIPlannerInterface:
         
         self.createAIProblemFile(inits, goals)
         
+    
+    def setActuators(plan):
+        steps = plan.split(')')
+        
+        for step in steps:
+            step.replace('(' ,'')
+            elements = step.split(' ')
+            
+            if 'heater' in elements[0]:
+                pass
+            elif 'ac' in elements[0]:
+                pass
+            elif 'blinds' in elements[0]:
+                pass
+            elif 'lights' in elements[0]:
+                pass
+        
         
         
 if __name__ == "__main__":
@@ -184,15 +200,21 @@ if __name__ == "__main__":
         time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
         difference = time2 - time1
         
+        print(difference)
+        
         # if OPENING_HOUR.time() >= datetime.now().time() or datetime.now().time() >= CLOSING_HOUR.time():
         #     print('CLOSED')
         if not planner.replannedSinceMotionToggle and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
+            print('REPLANNING')
             planner.startPlanning()
             planner.replannedSinceMotionToggle = True
+            os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
+            os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
             planner.startPlanning
+            os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
     
         
     
