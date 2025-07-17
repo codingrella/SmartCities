@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
+
+
 import os
 import time
 import shutil
-import psycopg2
 import threading
 
 from datetime import datetime
@@ -35,10 +36,21 @@ class AIPlannerInterface:
                                 'AC': 0,
                                 'Heater': 0 }
         
+        self.actions = { 'turnonac': self._setAC,
+                         'turnoffac': self._setAC,
+                         'turnonheater': self._setHeater,
+                         'turnoffheater': self._setHeater,
+                         'turnonlight': self._setLight,
+                         'turnofflight': self._setLight,
+                         'openblinds': self._setBlinds,
+                         'closeblinds': self._setBlinds
+            }
+        
         self.replannedSinceMotionToggle = False
         self.time_lastMotionDetected = datetime.now().strftime("%H:%M:%S")
         self.room = room
         
+        pub = MQTTPublisher()
         
         sub = MQTTSubscriber(room, '+', '+')
         sub.client.on_message = self.on_message
@@ -83,8 +95,25 @@ class AIPlannerInterface:
         with open(path, "a") as myfile:
             myfile.write(text_init)
             myfile.write(text_goal)
-
             
+    
+    def _setAC(self, value):
+        self.actuatorValues['AC'] = value
+        self.pub.run(f'{self.room}', 'Actuator', 'AC', value)
+        
+    def _setHeater(self, value):
+        self.actuatorValues['Heater'] = value
+        self.pub.run(f'{self.room}', 'Actuator', 'Heater', value)
+    
+    def _setLight(self, value):
+        self.actuatorValues['Lights'] = value
+        self.pub.run(f'{self.room}', 'Actuator', 'Lights', value)
+    
+    def _setBlinds(self, value):
+        self.actuatorValues['Blinds'] = value
+        self.pub.run(f'{self.room}', 'Actuator', 'Blinds', value)
+        
+       
     def _getHumidityInit(self):
         if float(self.sensorValues['Humidity_Sensor']) < valueThresholds.hum_lower:
             return f'(hum_isGood {self.room})'
@@ -172,22 +201,46 @@ class AIPlannerInterface:
         
         self.createAIProblemFile(inits, goals)
         
+        
+    def getPlan(self):
+        planSteps = []
+        
+        root = os.getcwd()
+        print(root)
+        path = os.path.join(root, PLAN_RESULT_PATH)
+        print(path)
+        
+        with open(path, encoding='utf-8') as file:
+            my_data = file.read()
+            
+        if 'ff: found legal plan as follows' in my_data:
+            idx1 = my_data.find('step')
+            idx2 = my_data.find('time spent:', idx1 + len('step'))
+            
+            if idx1 != -1 and idx2 != -1:
+                combinedSteps = my_data[idx1 + len('step'):idx2]
+                combinedSteps = combinedSteps.split('\n')
+                
+                for step in combinedSteps:
+                    action = step.split(':')[1]
+                    action = " ".join(action.split()).split(' ')
+                    planSteps.append(action)
+        return planSteps
+                    
     
-    def setActuators(plan):
+    def executePlan(self, plan):
         steps = plan.split(')')
         
         for step in steps:
             step.replace('(' ,'')
             elements = step.split(' ')
             
-            if 'heater' in elements[0]:
-                pass
-            elif 'ac' in elements[0]:
-                pass
-            elif 'blinds' in elements[0]:
-                pass
-            elif 'lights' in elements[0]:
-                pass
+            if 'on' in elements[0] or 'open' in elements[0]:
+                self.actions[elements[0]](1)
+            elif 'off' in elements[0] or 'close' in elements[0]:
+                self.actions[elements[0]](0)
+            
+            
         
         
         
@@ -209,12 +262,21 @@ if __name__ == "__main__":
             planner.startPlanning()
             planner.replannedSinceMotionToggle = True
             os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            time.sleep(5)
+            plan = planner.getPlan()
+            planner.executePlan(plan)
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
             os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            time.sleep(5)
+            plan = planner.getPlan()
+            planner.executePlan(plan)
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
             planner.startPlanning
             os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            time.sleep(5)
+            plan = planner.getPlan()
+            planner.executePlan(plan)
     
         
     
@@ -222,7 +284,3 @@ if __name__ == "__main__":
     # goals = AIPlanner.getAIPlannerGoals(inits, 'SR_1')
     
     # AIPlanner.createAIProblemFile(inits, goals, 'SR_1')
-    
-    
-    
-    
