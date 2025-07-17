@@ -18,9 +18,9 @@ MAX_RANGE_MOTION_DETECTED = 10            # 5 minutes
 OPENING_HOUR = datetime.strptime('08:00:00', '%H:%M:%S')
 CLOSING_HOUR = datetime.strptime('20:00:00', '%H:%M:%S')
 
-DOMAIN_FILE_PATH = "Hardware/PDDL_Files/Domain.pddl"
-PROBLEM_FILE_PATH = "Hardware/PDDL_Files/ProblemFile_SR_1.pddl"
-PLAN_RESULT_PATH = "Hardware/PDDL_Files/Plan.txt"
+DOMAIN_FILE_PATH = r"/PDDL_Files/Domain.pddl"
+PROBLEM_FILE_PATH = r"/PDDL_Files/ProblemFile_SR_1.pddl"
+PLAN_RESULT_PATH = r"/PDDL_Files/Plan.txt"
 
 
 class AIPlannerInterface:
@@ -77,8 +77,11 @@ class AIPlannerInterface:
     def createAIProblemFile(self, inits, goals):
         dirname = os.path.dirname(__file__)
         
-        src = dirname + f'\PDDL_Files\ProblemFile_{self.room}_Temp.pddl'
-        dst = dirname + f'\PDDL_Files\ProblemFile_{self.room}.pddl'
+        # src = dirname + f'\PDDL_Files\ProblemFile_{self.room}_Temp.pddl'
+        # dst = dirname + f'\PDDL_Files\ProblemFile_{self.room}.pddl'
+        
+        src = f'\PDDL_Files\ProblemFile_{self.room}_Temp.pddl'
+        dst = f'\PDDL_Files\ProblemFile_{self.room}.pddl'
         
         path = shutil.copy2(src,dst)
         
@@ -207,10 +210,8 @@ class AIPlannerInterface:
         
         root = os.getcwd()
         print(root)
-        path = os.path.join(root, PLAN_RESULT_PATH)
-        print(path)
         
-        with open(path, encoding='utf-8') as file:
+        with open(PLAN_RESULT_PATH, encoding='utf-8') as file:
             my_data = file.read()
             
         if 'ff: found legal plan as follows' in my_data:
