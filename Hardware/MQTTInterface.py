@@ -54,9 +54,13 @@ class MQTTPublisher:
 
 
 class MQTTSubscriber:
-    def __init__(self):
+    def __init__(self, room, deviceType, device):
         self.broker = BROKER_IP
         self.port = PORT
+        
+        self.room = room
+        self.deviceType = deviceType
+        self.device = device
         
         self.client_id = f'subscribe-{random.randint(0, 100)}'
         # self.username = 'emqx'
@@ -66,7 +70,6 @@ class MQTTSubscriber:
         
         
     def connect_mqtt(self):
-    
         client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, self.client_id)
         # client.username_pw_set(self.username, self.password)
         # client.on_connect = on_connect
@@ -74,14 +77,14 @@ class MQTTSubscriber:
         return client
     
     
-    def subscribe(self, room, deviceType, device):
-        topic = f"library/{room}/{deviceType}/{device}"
+    def subscribe(self):
+        topic = f"library/{self.room}/{self.deviceType}/{self.device}"
     
         self.client.subscribe(topic)
     
     
-    def run(self, room, deviceType, device):
-        self.subscribe(room, deviceType, device)
+    def run(self):
+        self.subscribe()
         self.client.loop_forever()
         
    
@@ -92,4 +95,4 @@ class MQTTSubscriber:
     
 # sub = MQTTSubscriber()
 # sub.client.on_message = on_message
-# sub.run('SR_1', 'Sensor', '#')
+# sub.run('SR_1', '+', '+')
