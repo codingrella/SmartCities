@@ -32,8 +32,8 @@ class AIPlannerInterface:
                               'Sound_Sensor': 0,
                               'Temperature_Sensor': 0 }
         self.actuatorValues = { 'Blinds': 0,
-                                'Lights': 0,
-                                'AC': 0,
+                                'Lights': 1,
+                                'AC': 1,
                                 'Heater': 0 }
         
         self.actions = { 'turnonac': self._setAC,
@@ -261,20 +261,23 @@ if __name__ == "__main__":
         if not planner.replannedSinceMotionToggle and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
             print('REPLANNING')
             planner.startPlanning()
+            time.sleep(5)
             planner.replannedSinceMotionToggle = True
-            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {resultPlanPath}")
+            os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl > PDDL_Files/Plan.txt")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
-            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {resultPlanPath}")
+            time.sleep(5)
+            os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl > PDDL_Files/Plan.txt")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
-            planner.startPlanning
-            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {resultPlanPath}")
+            planner.startPlanning()
+            time.sleep(5)
+            os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl > PDDL_Files/Plan.txt")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
