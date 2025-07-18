@@ -227,6 +227,7 @@ class AIPlannerInterface:
                     
     
     def executePlan(self, plan):
+        print(plan)
         steps = plan.split(')')
         
         for step in steps:
