@@ -3,74 +3,44 @@ import paho.mqtt as mqtt_client
 import random
 
 
-# conn = psycopg2.connect(database = "SmartCities25", 
-#                         user = "postgres", 
-#                         host= '100.116.154.10',
-#                         password = "Tn#2SKSS25",
-#                         port = 5432)
+conn = psycopg2.connect(database = "SmartCities25", 
+                        user = "postgres", 
+                        host= '192.168.188.33',
+                        password = "Tn#2SKSS25",
+                        port = 5432)
 
 
-# cur = conn.cursor()
-# # Execute SQL queries to fetch data from the database
-# cur.execute("select * from public.rooms")
-# result_rooms = cur.fetchall()
-# # cur.execute("select * from public.blinds")
-# # result_blinds = cur.fetchall()
-# # cur.execute("select * from public.door")
-# # result_door = cur.fetchall()
-# cur.execute("select * from public.humidity")
-# result_humidity = cur.fetchall()
-# cur.execute("select * from public.lighting")
-# result_lighting = cur.fetchall()
-# # cur.execute("select * from public.sunlight")
-# # result_sunlight = cur.fetchall()
-# cur.execute("select * from public.temperature")
-# result_temperature = cur.fetchall()
-# cur.execute("select * from public.volumelevel")
-# result_volume = cur.fetchall()
+cur = conn.cursor()
+# Execute SQL queries to fetch data from the database
+cur.execute("select * from public.rooms")
+result_rooms = cur.fetchall()
+# cur.execute("select * from public.blinds")
+# result_blinds = cur.fetchall()
+# cur.execute("select * from public.door")
+# result_door = cur.fetchall()
+cur.execute("select * from public.humidity")
+result_humidity = cur.fetchall()
+cur.execute("select * from public.lighting")
+result_lighting = cur.fetchall()
+# cur.execute("select * from public.sunlight")
+# result_sunlight = cur.fetchall()
+cur.execute("select * from public.temperature")
+result_temperature = cur.fetchall()
+cur.execute("select * from public.volumelevel")
+result_volume = cur.fetchall()
+cur.execute("select * from public.seats")
+result_seat = cur.fetchall()
 
-# for row in result_rooms:
+for row in result_rooms:
+    print(row)
+for row in result_lighting:
+    print(row)
+for row in result_humidity:
+    print(row)
+for row in result_seat:
+    print(row)
+
+# for row in result_seat:
 #     print(row)
-# for row in result_lighting:
-#     print(row)
-# for row in result_humidity:
-#     print(row)
-
-# # for row in result_seat:
-# #     print(row)
-# cur.close()
-# conn.close()
-
-# class MQTTSubscriber:
-#     def _init_(self):
-#         self.broker = '192.168.63.237'
-#         self.port = 1883
-#         self.topic = f"library/SR_1/Sensor/#"
-#         self.client_id = f'subscribe-{random.randint(0, 100)}'
-#         # self.username = 'emqx'
-#         # self.password = 'public'
-        
-#         self.client = self.connect_mqtt()
-        
-#     def connect_mqtt(self):
-    
-#         client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, self.client_id)
-#         # client.username_pw_set(self.username, self.password)
-#         # client.on_connect = on_connect
-#         client.connect(self.broker, self.port)
-#         return client
-    
-#     def subscribe(self):
-#         def on_message(client, userdata, msg):
-#             print(f"Received {msg.payload.decode()} from {msg.topic} topic")
-    
-#         self.client.subscribe(self.topic)
-#         self.client.on_message = on_message
-    
-    
-#     def run(self):
-#         self.subscribe()
-#         self.client.loop_forever()
-        
-# sub = MQTTSubscriber()
-# sub.run()
+cur.close()
+conn.close()

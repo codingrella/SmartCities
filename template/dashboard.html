@@ -10,13 +10,13 @@
     </head>
     <body>
         <div class="container">
-            <div class="header-section">
-                <div class="row">
-                    <h1>The Think Lounge Dashboard</h1>
+            <div class="row align-items-center mb-4 mt-4">
+                <div class="col-auto">
+                    <h1 class="mb-0">The Think Lounge Dashboard</h1>
+                </div>
+                <div class="col-auto">
                     <div class="button">
-                    <!-- RFID Scanner -->
-                    <!-- button to simulate the scanning of an RFID tag -->
-                    <button onclick="startCheckIn()">Check In</button>
+                        <button onclick="startCheckIn()" class="btn btn-primary">Check In</button>
                     </div>
                 </div>
             </div>
@@ -27,11 +27,11 @@
                         <div class="seat-stats">
                             <span class="stat-item">
                                 <span class="seat-indicator free"></span>
-                                Free: <span id="freeSeats">10</span>
+                                Free: <span id="freeSeats"></span>
                             </span>
                             <span class="stat-item">
                                 <span class="seat-indicator occupied"></span>
-                                Occupied: <span id="occupiedSeats">10</span>
+                                Occupied: <span id="occupiedSeats"></span>
                             </span>
                             <span class="stat-item">
                                 Total: <span id="totalSeats">20</span>
@@ -43,8 +43,8 @@
                             <label for="dashboardRooms">Select Room:</label>
                             <select name="room" id="dashboardRooms" onchange="loadSeatsForDashboard()">
                                 <option value="Room1">Study Room 1</option>
-                                <option value="Room2">Study Room 2</option>
-                                <option value="Room3">Study Room 3</option>
+                                <!-- <option value="Room2">Study Room 2</option>
+                                <option value="Room3">Study Room 3</option> -->
                                 <!-- <option value="">-- Select Study Room --</option>
                                 {% for room in rooms %}
                                     <option value="{{ room.id }}">{{ room.name }}</option>
@@ -171,17 +171,17 @@
         });
         
         // If no dynamic data, create sample seats
-        if (roomSeats.length === 0) {
-            roomSeats = [];
-            for (let i = 1; i <= 20; i++) {
-                roomSeats.push({
-                    id: i,
-                    name: `Seat ${i}`,
-                    occupied: Math.random() > 0.7, // 30% chance of being occupied
-                    room: selectedRoomId
-                });
-            }
-        }
+        // if (roomSeats.length === 0) {
+        //     roomSeats = [];
+        //     for (let i = 1; i <= 20; i++) {
+        //         roomSeats.push({
+        //             id: i,
+        //             name: `Seat ${i}`,
+        //             occupied: Math.random() > 0.7, // 30% chance of being occupied
+        //             room: selectedRoomId
+        //         });
+        //     }
+        // }
         
         // Create seat buttons (view-only)
         roomSeats.forEach((seat, index) => {
@@ -219,6 +219,7 @@
 
     function updateSeatStats(seats) {
         const totalSeats = seats.length;
+        //get occupied seats by selecting all true values from seats
         const occupiedSeats = seats.filter(seat => seat.occupied || seat[3]).length;
         const freeSeats = totalSeats - occupiedSeats;
         
@@ -229,19 +230,21 @@
 
     // Load real-time sensor data
     function loadSensorData() {
-        fetch('/api/data')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('humidity').textContent = data.humidity + '%';
-                document.getElementById('temperature').textContent = data.temperature + '°C';
-                document.getElementById('airQuality').textContent = data.light + ' lux';
-            })
-            .catch(error => {
-                console.error('Error loading sensor data:', error);
-                document.getElementById('humidity').textContent = 'N/A';
-                document.getElementById('temperature').textContent = 'N/A';
-                document.getElementById('airQuality').textContent = 'N/A';
-            });
+        //load sensor data from message broker
+
+        // fetch('/api/data')
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         document.getElementById('humidity').textContent = data.humidity + '%';
+        //         document.getElementById('temperature').textContent = data.temperature + '°C';
+        //         document.getElementById('airQuality').textContent = data.light + ' lux';
+        //     })
+        //     .catch(error => {
+        //         console.error('Error loading sensor data:', error);
+        //         document.getElementById('humidity').textContent = 'N/A';
+        //         document.getElementById('temperature').textContent = 'N/A';
+        //         document.getElementById('airQuality').textContent = 'N/A';
+        //     });
     }
 
     function updateLightLevel() {

@@ -16,13 +16,13 @@ import paho.mqtt.client as mqtt_client
 app = Flask(__name__, template_folder='template', static_folder='static')
 socketio = SocketIO(app)
 
-def get_connection():
+def get_connection_to_db():
     try:
         print("Attempting to connect to database...")
         conn = psycopg2.connect(
             database="SmartCities25",
             user="postgres",
-            host="172.20.10.13",
+            host="192.168.188.33",
             password="Tn#2SKSS25",
             port=5432,
             connect_timeout=10  # 10 second timeout
@@ -36,39 +36,39 @@ def get_connection():
         print(f"Unexpected database error: {e}")
         return None
 
-class MQTTSubscriber:
-    def _init_(self):
-        self.broker = '192.168.63.237'
-        self.port = 1883
-        self.topic = f"library/SR_1/Sensor/#"
-        self.client_id = f'subscribe-{random.randint(0, 100)}'
-        # self.username = 'emqx'
-        # self.password = 'public'
+# class MQTTSubscriber:
+#     def _init_(self):
+#         self.broker = '192.168.63.237'
+#         self.port = 1883
+#         self.topic = f"library/SR_1/Sensor/#"
+#         self.client_id = f'subscribe-{random.randint(0, 100)}'
+#         # self.username = 'emqx'
+#         # self.password = 'public'
         
-        self.client = self.connect_mqtt()
+#         self.client = self.connect_mqtt()
         
-    def connect_mqtt(self):
+#     def connect_mqtt(self):
     
-        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, self.client_id)
-        # client.username_pw_set(self.username, self.password)
-        # client.on_connect = on_connect
-        client.connect(self.broker, self.port)
-        return client
+#         client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, self.client_id)
+#         # client.username_pw_set(self.username, self.password)
+#         # client.on_connect = on_connect
+#         client.connect(self.broker, self.port)
+#         return client
     
-    def subscribe(self):
-        def on_message(client, userdata, msg):
-            print(f"Received {msg.payload.decode()} from {msg.topic} topic")
+#     def subscribe(self):
+#         def on_message(client, userdata, msg):
+#             print(f"Received {msg.payload.decode()} from {msg.topic} topic")
     
-        self.client.subscribe(self.topic)
-        self.client.on_message = on_message
+#         self.client.subscribe(self.topic)
+#         self.client.on_message = on_message
     
     
-    def run(self):
-        self.subscribe()
-        self.client.loop_forever()
+#     def run(self):
+#         self.subscribe()
+#         self.client.loop_forever()
         
-sub = MQTTSubscriber()
-sub.run()
+# sub = MQTTSubscriber()
+# sub.run()
 
 @app.route('/')
 def home():
@@ -80,68 +80,59 @@ def serve_css(filename):
 
 @app.route('/dashboard')
 def dashboard():
-    conn = get_connection()
-    if not conn:
-        # Fallback: Return dashboard with sample data when database is unavailable
-        print("Database unavailable, using sample data")
-        return render_template('dashboard.html', 
-                               rooms=[], 
-                               seat_occupied=[], 
-                               aircon=[], 
-                               blinds=[], 
-                               door=[], 
-                               humidity=[], 
-                               lamps=[], 
-                               sunlight=[], 
-                               temperature=[], 
-                               volume_level=[],
-                               db_error=True)
+    conn = get_connection_to_db()
+    # if not conn:
+    #     # Fallback: Return dashboard with sample data when database is unavailable
+    #     print("Database unavailable, using sample data")
+    #     return render_template('dashboard.html', 
+    #                            rooms=[], 
+    #                            seat_occupied=[], 
+    #                         #    aircon=[], 
+    #                         #    blinds=[], 
+    #                         #    door=[], 
+    #                            humidity=[], 
+    #                         #    lamps=[], 
+    #                         #    sunlight=[], 
+    #                            temperature=[], 
+    #                            volume_level=[],
+    #                            lighting=[],
+    #                            db_error=True)
 
     try:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM public.rooms")
+        cur.execute("select * from public.rooms")
         rooms = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.seatoccupied")
-        seat_occupied = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.airconditioning")
-        aircon = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.blinds")
-        blinds = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.door")
-        door = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.humidity")
+        # cur.execute("select * from public.blinds")
+        # result_blinds = cur.fetchall()
+        # cur.execute("select * from public.door")
+        # result_door = cur.fetchall()
+        cur.execute("select * from public.humidity")
         humidity = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.lamps")
-        lamps = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.sunlight")
-        sunlight = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.temperature")
+        cur.execute("select * from public.lighting")
+        lighting = cur.fetchall()
+        # cur.execute("select * from public.sunlight")
+        # result_sunlight = cur.fetchall()
+        cur.execute("select * from public.temperature")
         temperature = cur.fetchall()
-
-        cur.execute("SELECT * FROM public.volumelevel")
+        cur.execute("select * from public.volumelevel")
         volume_level = cur.fetchall()
+        cur.execute("select * from public.seats")
+        seat_occupied = cur.fetchall()
 
         conn.close()
 
         return render_template('dashboard.html', 
                                rooms=rooms, 
                                seat_occupied=seat_occupied, 
-                               aircon=aircon, 
-                               blinds=blinds, 
-                               door=door, 
+                            #    aircon=aircon, 
+                            #    blinds=blinds, 
+                            #    door=door, 
                                humidity=humidity, 
-                               lamps=lamps, 
-                               sunlight=sunlight, 
+                            #    lamps=lamps, 
+                            #    sunlight=sunlight, 
                                temperature=temperature, 
                                volume_level=volume_level,
+                               lighting=lighting,
                                db_error=False)
     except Exception as e:
         if conn:
@@ -166,28 +157,14 @@ def seat_booking():
     # Generate time slots for the booking form
     time_slots = generate_time_slots()
     
-    conn = get_connection()
-    if not conn:    
-        # Fallback with sample data if database is unavailable
-        sample_rooms = [
-            {'id': 1, 'name': 'SR1', 'capacity': 20},
-            {'id': 2, 'name': 'SR2', 'capacity': 15}
-        ]
-        sample_seats = [
-            {'id': i, 'name': f'Seat {i}', 'room_id': 1, 'occupied': False} 
-            for i in range(1, 21)
-        ] + [
-            {'id': i, 'name': f'Seat {i-20}', 'room_id': 2, 'occupied': False} 
-            for i in range(21, 36)
-        ]
-        return render_template('bookingPopUp.html', rooms=sample_rooms, seats=sample_seats, time_slots=time_slots)
+    conn = get_connection_to_db()
     
     try:
         cur = conn.cursor()
         cur.execute("SELECT * FROM public.rooms")
         rooms = cur.fetchall()
         
-        cur.execute("SELECT * FROM public.seatoccupied")
+        cur.execute("SELECT * FROM public.seats")
         seats = cur.fetchall()
         
         conn.close()
@@ -197,40 +174,20 @@ def seat_booking():
         if conn:
             conn.close()
         print(f"Database error in booking: {e}")
-        # Return with sample data on error
-        sample_rooms = [
-            {'id': 1, 'name': 'SR1', 'capacity': 20},
-            {'id': 2, 'name': 'SR2', 'capacity': 15}
-        ]
-        return render_template('bookingPopUp.html', rooms=sample_rooms, seats=[], time_slots=time_slots)
 
 @app.route('/admin')
 def admin_page():
     # Generate time slots for the booking form
     time_slots = generate_time_slots()
     
-    conn = get_connection()
-    if not conn:    
-        # Fallback with sample data if database is unavailable
-        sample_rooms = [
-            {'id': 1, 'name': 'SR1', 'capacity': 20},
-            {'id': 2, 'name': 'SR2', 'capacity': 15}
-        ]
-        sample_seats = [
-            {'id': i, 'name': f'Seat {i}', 'room_id': 1, 'occupied': False} 
-            for i in range(1, 21)
-        ] + [
-            {'id': i, 'name': f'Seat {i-20}', 'room_id': 2, 'occupied': False} 
-            for i in range(21, 36)
-        ]
-        return render_template('adminPage.html', rooms=sample_rooms, seats=sample_seats, time_slots=time_slots)
+    conn = get_connection_to_db()
 
     try:
         cur = conn.cursor()
         cur.execute("SELECT * FROM public.rooms")
         rooms = cur.fetchall()
         
-        cur.execute("SELECT * FROM public.seatoccupied")
+        cur.execute("SELECT * FROM public.seats")
         seats = cur.fetchall()
         
         conn.close()
@@ -240,19 +197,6 @@ def admin_page():
         if conn:
             conn.close()
         print(f"Database error in booking: {e}")
-        # Return with sample data on error
-        sample_rooms = [
-            {'id': 1, 'name': 'SR1', 'capacity': 20},
-            {'id': 2, 'name': 'SR2', 'capacity': 15}
-        ]
-        sample_seats = [
-            {'id': i, 'name': f'Seat {i}', 'room_id': 1, 'occupied': False} 
-            for i in range(1, 21)
-        ] + [
-            {'id': i, 'name': f'Seat {i-20}', 'room_id': 2, 'occupied': False} 
-            for i in range(21, 36)
-        ]
-        return render_template('adminPage.html', rooms=sample_rooms, seats=sample_seats, time_slots=time_slots)
 
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -272,23 +216,23 @@ def open_browser(url):
     time.sleep(1.5)  # Wait for Flask server to start
     webbrowser.open(url)
 
-@app.route('/api/test-db')
-def test_db():
-    """Test database connectivity"""
-    conn = get_connection()
-    if conn:
-        try:
-            cur = conn.cursor()
-            cur.execute("SELECT 1")
-            result = cur.fetchone()
-            conn.close()
-            return jsonify({"status": "success", "message": "Database connection successful", "result": result})
-        except Exception as e:
-            if conn:
-                conn.close()
-            return jsonify({"status": "error", "message": f"Database query failed: {e}"})
-    else:
-        return jsonify({"status": "error", "message": "Could not connect to database"})
+# @app.route('/api/test-db')
+# def test_db():
+#     """Test database connectivity"""
+#     conn = get_connection_to_db()
+#     if conn:
+#         try:
+#             cur = conn.cursor()
+#             cur.execute("SELECT 1")
+#             result = cur.fetchone()
+#             conn.close()
+#             return jsonify({"status": "success", "message": "Database connection successful", "result": result})
+#         except Exception as e:
+#             if conn:
+#                 conn.close()
+#             return jsonify({"status": "error", "message": f"Database query failed: {e}"})
+#     else:
+#         return jsonify({"status": "error", "message": "Could not connect to database"})
 
 @app.route('/api/book-seat', methods=['POST'])
 def book_seat():
@@ -301,7 +245,7 @@ def book_seat():
         if not seat_id or not room_id:
             return jsonify({'success': False, 'message': 'Missing seat or room ID'})
         
-        conn = get_connection()
+        conn = get_connection_to_db()
         if not conn:
             return jsonify({'success': False, 'message': 'Database connection failed'})
         
@@ -343,15 +287,16 @@ def book_seat():
         print(f"Booking API error: {e}")
         return jsonify({'success': False, 'message': 'Server error'})
 
-@app.route('/api/data')
-def sensor_data():
-    # Simulierte Sensordaten – später ersetzen durch echte Werte
-    data = {
-        'temperature': round(random.uniform(20, 30), 2),
-        'light': random.randint(300, 800),
-        'humidity': round(random.uniform(40, 60), 1)
-    }
-    return jsonify(data)
+# @app.route('/api/data')
+# def sensor_data():
+    
+#     # Simulierte Sensordaten – später ersetzen durch echte Werte
+#     # data = {
+#     #     'temperature': round(random.uniform(20, 30), 2),
+#     #     'light': random.randint(300, 800),
+#     #     'humidity': round(random.uniform(40, 60), 1)
+#     # }
+#     return jsonify(data)
 
 @app.route('/api/light-level', methods=['POST'])
 def update_light_level():
@@ -377,19 +322,19 @@ def update_light_level():
 
 @app.route('/api/seating-plan')
 def seating_plan():
-    conn = get_connection()
-    if not conn:
-        # Return sample data if database is unavailable
-        sample_data = [
-            {'id': i, 'name': f'Seat {i}', 'occupied': random.choice([True, False]), 'room': 'SR1'}
-            for i in range(1, 21)
-        ]
-        return jsonify(sample_data)
+    conn = get_connection_to_db()
+    # if not conn:
+    #     # Return sample data if database is unavailable
+    #     sample_data = [
+    #         {'id': i, 'name': f'Seat {i}', 'occupied': random.choice([True, False]), 'room': 'SR1'}
+    #         for i in range(1, 21)
+    #     ]
+    #     return jsonify(sample_data)
     
     try:
         cur = conn.cursor()
         # Get seat occupancy data
-        cur.execute("SELECT roomid, seatid, status FROM public.seatoccupied WHERE roomid = %s", ('SR1',))
+        cur.execute("SELECT roomid, seatid, status FROM public.seats WHERE roomid = %s", ('SR1',))
         seat_data = cur.fetchall()
         
         # Create seating plan
@@ -416,11 +361,11 @@ def seating_plan():
             conn.close()
         print(f"Error loading seating plan: {e}")
         # Return sample data on error
-        sample_data = [
-            {'id': i, 'name': f'Seat {i}', 'occupied': random.choice([True, False]), 'room': 'SR1'}
-            for i in range(1, 21)
-        ]
-        return jsonify(sample_data)
+        # sample_data = [
+        #     {'id': i, 'name': f'Seat {i}', 'occupied': random.choice([True, False]), 'room': 'SR1'}
+        #     for i in range(1, 21)
+        # ]
+        # return jsonify(sample_data)
 
 def generate_time_slots():
     """Generate time slots in 5-minute intervals from 8:00 AM to 8:00 PM"""
