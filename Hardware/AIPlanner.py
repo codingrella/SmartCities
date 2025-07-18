@@ -237,6 +237,8 @@ class AIPlannerInterface:
                 self.actions[elements[0]](1)
             elif 'off' in elements[0] or 'close' in elements[0]:
                 self.actions[elements[0]](0)
+                
+        print(steps)
             
             
         
@@ -282,4 +284,3 @@ if __name__ == "__main__":
     # goals = AIPlanner.getAIPlannerGoals(inits, 'SR_1')
     
     # AIPlanner.createAIProblemFile(inits, goals, 'SR_1')
-    
