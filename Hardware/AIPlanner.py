@@ -261,19 +261,19 @@ if __name__ == "__main__":
             print('REPLANNING')
             planner.startPlanning()
             planner.replannedSinceMotionToggle = True
-            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {resultPlanPath}")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
-            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {resultPlanPath}")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
             planner.startPlanning
-            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {resultPlanPath}")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
