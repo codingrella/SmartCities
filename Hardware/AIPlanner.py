@@ -77,8 +77,8 @@ class AIPlannerInterface:
     def createAIProblemFile(self, inits, goals):
         dirname = os.path.dirname(__file__)
         
-        src = dirname + f'\PDDL_Files\ProblemFile_{self.room}_Temp.pddl'
-        dst = dirname + f'\PDDL_Files\ProblemFile_{self.room}.pddl'
+        src = dirname + f'/PDDL_Files/ProblemFile_{self.room}_Temp.pddl'
+        dst = dirname + f'/PDDL_Files/ProblemFile_{self.room}.pddl'
         
         path = shutil.copy2(src,dst)
         
