@@ -77,11 +77,8 @@ class AIPlannerInterface:
     def createAIProblemFile(self, inits, goals):
         dirname = os.path.dirname(__file__)
         
-        # src = dirname + f'\PDDL_Files\ProblemFile_{self.room}_Temp.pddl'
-        # dst = dirname + f'\PDDL_Files\ProblemFile_{self.room}.pddl'
-        
-        src = f'\PDDL_Files\ProblemFile_{self.room}_Temp.pddl'
-        dst = f'\PDDL_Files\ProblemFile_{self.room}.pddl'
+        src = dirname + f'\PDDL_Files\ProblemFile_{self.room}_Temp.pddl'
+        dst = dirname + f'\PDDL_Files\ProblemFile_{self.room}.pddl'
         
         path = shutil.copy2(src,dst)
         
@@ -208,10 +205,10 @@ class AIPlannerInterface:
     def getPlan(self):
         planSteps = []
         
-        root = os.getcwd()
-        print(root)
+        dirname = os.path.dirname(__file__)
+        path = dirname + PLAN_RESULT_PATH
         
-        with open(PLAN_RESULT_PATH, encoding='utf-8') as file:
+        with open(path, encoding='utf-8') as file:
             my_data = file.read()
             
         if 'ff: found legal plan as follows' in my_data:
@@ -249,12 +246,12 @@ if __name__ == "__main__":
     planner = AIPlannerInterface('SR_1')
     time.sleep(5)
     
+    resultPlanPath = os.path.dirname(__file__) + PLAN_RESULT_PATH
+    
     while True:
         time1 = datetime.strptime(planner.time_lastMotionDetected, '%H:%M:%S')
         time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
         difference = time2 - time1
-        
-        print(difference)
         
         # if OPENING_HOUR.time() >= datetime.now().time() or datetime.now().time() >= CLOSING_HOUR.time():
         #     print('CLOSED')
@@ -262,19 +259,19 @@ if __name__ == "__main__":
             print('REPLANNING')
             planner.startPlanning()
             planner.replannedSinceMotionToggle = True
-            os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
-            os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
             planner.startPlanning
-            os.system(f"./FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
+            os.system(f"./../FF/FF-v2.3/ff –o {DOMAIN_FILE_PATH} –f {PROBLEM_FILE_PATH} > {PLAN_RESULT_PATH}")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
@@ -285,3 +282,4 @@ if __name__ == "__main__":
     # goals = AIPlanner.getAIPlannerGoals(inits, 'SR_1')
     
     # AIPlanner.createAIProblemFile(inits, goals, 'SR_1')
+    
