@@ -92,15 +92,15 @@ class AIPlannerInterface:
         difference = time2 - time1
         
         if res['Device'] == 'Motion_Sensor':
-            if self.actuatorValues[res['Device']] == 0 and res['Value'] == 1:
-                self.actuatorValues[res['Device']] = 1
+            if self.sensorValues[res['Device']] == 0 and res['Value'] == 1:
+                self.sensorValues[res['Device']] = 1
                 self.time_toggleOneDetected = res['TimeStamp'].strftime("%H:%M:%S")
                 self.motionToggleZero = False
                 if difference >= MAX_RANGE_MOTION_DETECTED:
                     self.motionToggleOne = True
                 print('Motion toggle to 1')
-            elif self.actuatorValues[res['Device']] == 1 and res['Value'] == 0:
-                self.actuatorValues[res['Device']] = 0
+            elif self.sensorValues[res['Device']] == 1 and res['Value'] == 0:
+                self.sensorValues[res['Device']] = 0
                 self.time_toggleZeroDetected = res['TimeStamp'].strftime("%H:%M:%S")
                 self.motionToggleZero = True
                 self.motionToggleOne = False
