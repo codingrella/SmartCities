@@ -44,7 +44,7 @@
                         <div class="room-selection">
                         <label for="dashboardRooms">Select Room:</label>
                         <select name="room" id="dashboardRooms" onchange="loadSeatsForDashboard()">
-                            <option value="Room1"></option>
+                            <option value="Room1">Study Room 1</option>
                         </select>
                         
                         <!-- Keep only the legend and grid -->
@@ -196,26 +196,8 @@
                         console.error('Error parsing MQTT message:', e);
                     }
                 });
-                // try{
-                //     const data = JSON.parse(message);
-                //     console.log('Received message:', data);
+            }
 
-                //     // Update sensor values in the dashboard
-                //     if (data.Device === 'Temperature_Sensor') {
-                //         document.getElementById('temperature').textContent = data.Value + '°C';
-                //     } if (data.Device === 'Humidity_Sensor') {
-                //         document.getElementById('humidity').textContent = data.Value + '%';
-                //     } if (data.Device === 'Sound_Sensor') {
-                //         document.getElementById('soundlevel').textContent = data.Value;
-                //     } if (data.Device === 'Light_Sensor') {
-                //         document.getElementById('lighting').value = data.Value;
-                //         updateLightLevel();
-                //     }
-                // } catch (e) {
-                //     console.error('Error parsing MQTT message:', e);
-                // }
-            // }
-        }
             // Call connectMQTT on page load
             connectMQTT();
         </script>

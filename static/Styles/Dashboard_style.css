@@ -116,8 +116,8 @@ button {
 }
 
 .seating-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
     padding: 20px;
