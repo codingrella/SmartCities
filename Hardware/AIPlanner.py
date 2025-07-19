@@ -278,10 +278,10 @@ if __name__ == "__main__":
             # os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
     
             result = subprocess.check_output(["./runPlan.sh"])
-            
+            print(result)
             time.sleep(5)
-            plan = planner.getPlan()
-            planner.executePlan(plan)
+            # plan = planner.getPlan()
+            # planner.executePlan(plan)
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
             time.sleep(5)
