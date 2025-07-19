@@ -101,7 +101,7 @@ class AIPlannerInterface:
                 print('Motion toggle to 1')
             elif self.sensorValues[res['Device']] == 1 and res['Value'] == 0:
                 self.sensorValues[res['Device']] = 0
-                self.time_toggleZeroDetected = res['TimeStamp'].strftime("%H:%M:%S")
+                self.time_toggleZeroDetected = datetime.strptime(res['TimeStamp'], '%H:%M:%S').time()
                 self.motionToggleZero = True
                 self.motionToggleOne = False
                 print('Motion toggle to 0')
