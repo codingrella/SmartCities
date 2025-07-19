@@ -38,10 +38,10 @@ class MQTTSubscriber:
     def subscribe(self):
         def on_message(client, userdata, msg):
             print(f"Received {msg.payload.decode()} from {msg.topic} topic")
+            plugwise_light(msg.payload.decode())
     
         self.client.subscribe(self.topic)
-        self.client.on_message = on_message
-    
+        self.client.on_message = on_message    
     
     def run(self):
         self.subscribe()
