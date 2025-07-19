@@ -96,7 +96,7 @@ class AIPlannerInterface:
                 self.sensorValues[res['Device']] = 1
                 self.time_toggleOneDetected = res['TimeStamp'].strftime("%H:%M:%S")
                 self.motionToggleZero = False
-                if difference >= MAX_RANGE_MOTION_DETECTED:
+                if int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
                     self.motionToggleOne = True
                 print('Motion toggle to 1')
             elif self.sensorValues[res['Device']] == 1 and res['Value'] == 0:
@@ -285,7 +285,7 @@ if __name__ == "__main__":
         # if OPENING_HOUR.time() >= datetime.now().time() or datetime.now().time() >= CLOSING_HOUR.time():
         #     print('CLOSED')
         
-        if planner.motionToggleOne or (planner.motionToggleZero and difference >= MAX_RANGE_MOTION_DETECTED): 
+        if planner.motionToggleOne or (planner.motionToggleZero and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED): 
             print('REPLANNING')
             planner.startPlanning()
             time.sleep(5)
