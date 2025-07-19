@@ -226,10 +226,9 @@ class AIPlannerInterface:
                 combinedSteps = combinedSteps.split('\n')
                 
                 for step in combinedSteps:
-                    # remove white noise, but keep spaces between words
-                    action = " ".join(step.split()).split(' ')
-                    if action != '':
+                    if ':' in step:
                         action = step.split(':')[1]
+                        # remove white noise, but keep spaces between words
                         action = " ".join(action.split()).split(' ')
                         planSteps.append(action)
         return planSteps
