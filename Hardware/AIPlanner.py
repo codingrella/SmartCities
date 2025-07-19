@@ -94,7 +94,7 @@ class AIPlannerInterface:
         if res['Device'] == 'Motion_Sensor':
             if self.sensorValues[res['Device']] == 0 and res['Value'] == 1:
                 self.sensorValues[res['Device']] = 1
-                self.time_toggleOneDetected = res['TimeStamp'].strftime("%H:%M:%S")
+                self.time_toggleOneDetected = datetime.strptime(res['TimeStamp'], '%H:%M:%S').time()
                 self.motionToggleZero = False
                 if int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
                     self.motionToggleOne = True
