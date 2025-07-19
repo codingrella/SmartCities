@@ -33,10 +33,10 @@ result_seat = cur.fetchall()
 
 for row in result_rooms:
     print(row)
-for row in result_lighting:
-    print(row)
-for row in result_humidity:
-    print(row)
+# for row in result_lighting:
+#     print(row)
+# for row in result_humidity:
+#     print(row)
 for row in result_seat:
     print(row)
 

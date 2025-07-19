@@ -42,13 +42,7 @@
                         <div class="room-selection">
                             <label for="dashboardRooms">Select Room:</label>
                             <select name="room" id="dashboardRooms" onchange="loadSeatsForDashboard()">
-                                <option value="Room1">Study Room 1</option>
-                                <!-- <option value="Room2">Study Room 2</option>
-                                <option value="Room3">Study Room 3</option> -->
-                                <!-- <option value="">-- Select Study Room --</option>
-                                {% for room in rooms %}
-                                    <option value="{{ room.id }}">{{ room.name }}</option>
-                                {% endfor %} -->
+                                <option value="firstRoomName">{{ firstRoomName }}</option>
                             </select>
                             <div class="seat-legend">
                                 <div class="legend-item">
@@ -230,8 +224,14 @@
     
     // Load data from hidden script tags
     try {
+        //parse the array of rooms and seats from the hidden script tags
         roomsData = JSON.parse(document.getElementById('dashboardRoomsData').textContent);
+        console.log(roomsData);
+        // get room name from the first room in the array
+        const firstRoomName = roomsData[0];
+        console.log(firstRoomName); // Outputs the name of the first room
         seatsData = JSON.parse(document.getElementById('dashboardSeatsData').textContent);
+        console.log(seatsData);
     } catch (e) {
         console.error('Error loading room/seat data:', e);
         roomsData = [];
@@ -254,6 +254,7 @@
 
     function loadSeatsForDashboard() {
         const roomSelect = document.getElementById('dashboardRooms');
+        console.log('Selected room:', roomSelect.value);
         const selectedRoomId = roomSelect.value;
         const seatsGrid = document.getElementById('mainSeatingGrid');
         

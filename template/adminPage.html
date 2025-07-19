@@ -19,7 +19,7 @@
             <!-- Booking form with User ID and Password-->
              <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">Set Threshold for FF Planner</h3>
+                        <h3 class="mb-0">Set Threshold Manually</h3>
                         <button type="button" class="btn-close" aria-label="Close" onclick="toggleThresholdCard()"></button>
                     </div>
                     <div class="threshold-section card-body" id="thresholdCardBody">
@@ -35,9 +35,14 @@
                             <input type="number" id="humidityThreshold" name="humidityThreshold" class="form-control w-auto" value="50" min="30" max="70">
                         </div>
                         <div class="form-group d-flex align-items-center mb-3">
-                            <span class="me-2"><i class="bi bi-lightbulb"></i></span>
-                            <label for="lightThreshold" class="me-2 mb-0">Light:</label>
-                            <input type="number" id="lightThreshold" name="lightThreshold" class="form-control w-auto" value="300" min="100" max="500">
+                            <div class="toggle-switch d-flex align-items-center">
+                                <label for="lightSwitch" class="me-2 mb-0">Switch Light in Study Room:</label>
+                                <div class="switch-icon" id="lightSwitchIcon">💡</div>
+                                <label class="switch">
+                                    <input type="checkbox" id="lightSwitch" name="lightSwitch" onclick="toggleLightControl()">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
                         <button type="button" class="btn btn-primary" id="saveThresholdsButton">Save Thresholds</button>
                     </div>
@@ -188,17 +193,17 @@
                                     lightThreshold
                                 });
                                 mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Temperature_Low',
-                                    `{'Device': 'Temperature_Sensor', 'Threshold_Value': '${lowTemperatureThreshold}'}`,
+                                    `{'Device': 'Temperature_Threshold_Low', 'Value': '${lowTemperatureThreshold}'}`,
                                     { qos: 1, retain: true });
                                 mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Temperature_High',
-                                    `{'Device': 'Temperature_Sensor', 'Threshold_Value': '${highTemperatureThreshold}'}`,
+                                    `{'Device': 'Temperature_Threshold_High', 'Value': '${highTemperatureThreshold}'}`,
                                     { qos: 1, retain: true });
                                 mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Humidity',
-                                    `{'Device': 'Humidity_Sensor', 'Threshold_Value': '${humidityThreshold}'}`,
+                                    `{'Device': 'Humidity_Threshold', 'Value': '${humidityThreshold}'}`,
                                     { qos: 1, retain: true });
-                                mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Light',
-                                    `{'Device': 'Light_Sensor', 'Threshold_Value': '${lightThreshold}'}`,
-                                    { qos: 1, retain: true });
+                                // mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Light',
+                                //     `{'Device': 'Light_Threshold', 'Value': '${lightThreshold}'}`,
+                                //     { qos: 1, retain: true });
                             });
 
                         } else if (err.message === 'Invalid topic') {
@@ -233,6 +238,15 @@
         timeSlotsData = [];
     }
 
+    function toggleLightControl() {
+        const lightSwitch = document.getElementById('lightSwitch');
+        const lightSwitchIcon = document.getElementById('lightSwitchIcon');
+        if (lightSwitch.checked)
+            lightSwitchIcon.textContent = '💡'; // Light on icon
+        else
+            lightSwitchIcon.textContent = '🌑'; // Light off icon
+        mqttClient.publish('library/SR_1/Plugwise/Light', `${lightSwitch.checked ? 'on' : 'off'}`, { qos: 1, retain: true });
+    }
 
     function loadSeatsForRoom() {
         const roomSelect = document.getElementById('rooms');

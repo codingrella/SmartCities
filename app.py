@@ -107,37 +107,14 @@ def dashboard():
         cur = conn.cursor()
         cur.execute("select * from public.rooms")
         rooms = cur.fetchall()
-        # cur.execute("select * from public.blinds")
-        # result_blinds = cur.fetchall()
-        # cur.execute("select * from public.door")
-        # result_door = cur.fetchall()
-        cur.execute("select * from public.humidity")
-        humidity = cur.fetchall()
-        cur.execute("select * from public.lighting")
-        lighting = cur.fetchall()
-        # cur.execute("select * from public.sunlight")
-        # result_sunlight = cur.fetchall()
-        cur.execute("select * from public.temperature")
-        temperature = cur.fetchall()
-        cur.execute("select * from public.volumelevel")
-        volume_level = cur.fetchall()
         cur.execute("select * from public.seats")
-        seat_occupied = cur.fetchall()
+        seats = cur.fetchall()
 
         conn.close()
 
         return render_template('dashboard.html', 
                                rooms=rooms, 
-                               seat_occupied=seat_occupied, 
-                            #    aircon=aircon, 
-                            #    blinds=blinds, 
-                            #    door=door, 
-                               humidity=humidity, 
-                            #    lamps=lamps, 
-                            #    sunlight=sunlight, 
-                               temperature=temperature, 
-                               volume_level=volume_level,
-                               lighting=lighting,
+                               seats=seats,
                                db_error=False)
     except Exception as e:
         if conn:
