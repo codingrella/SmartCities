@@ -276,12 +276,8 @@ if __name__ == "__main__":
             planner.replannedSinceMotionToggle = True
             # os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl > PDDL_Files/Plan.txt")
             # os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
-            
-            cmd = ['./../FF/FF-v2.3/ff', '-o', '/home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl', '-f', '/home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl']
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-            
-            #result = subprocess.check_output(["./../FF/FF-v2.3/ff", ["-o", "-f"], ["/home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl", "/home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl"]])
+    
+            result = subprocess.check_output(["./runPlan.sh"])
             
             time.sleep(5)
             plan = planner.getPlan()
