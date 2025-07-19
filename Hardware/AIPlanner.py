@@ -250,6 +250,7 @@ if __name__ == "__main__":
     time.sleep(5)
     
     resultPlanPath = os.path.dirname(__file__) + PLAN_RESULT_PATH
+    print(resultPlanPath)
     
     while True:
         time1 = datetime.strptime(planner.time_lastMotionDetected, '%H:%M:%S')
@@ -263,21 +264,22 @@ if __name__ == "__main__":
             planner.startPlanning()
             time.sleep(5)
             planner.replannedSinceMotionToggle = True
-            os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl")
+            # os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl > PDDL_Files/Plan.txt")
+            os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
             time.sleep(5)
-            os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl")
+            os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
             planner.startPlanning()
             time.sleep(5)
-            os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl")
+            os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
