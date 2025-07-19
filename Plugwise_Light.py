@@ -11,9 +11,9 @@ circle = Circle("000D6F0005A9062F", stick)  # MAC address of Circle+
 print("Current electricity consumption in W: %.2f" % (circle.get_power_usage(),))
 
 def plugwise_light(payload):
-    if payload == "on":
+    if payload == 'on':
         circle.switch_on()
-    elif payload == "off":
+    elif payload == 'off':
         circle.switch_off()
 
 class MQTTSubscriber:
@@ -38,6 +38,7 @@ class MQTTSubscriber:
     def subscribe(self):
         def on_message(client, userdata, msg):
             print(f"Received {msg.payload.decode()} from {msg.topic} topic")
+            plugwise_light(msg.payload.decode())
     
         self.client.subscribe(self.topic)
         self.client.on_message = on_message
