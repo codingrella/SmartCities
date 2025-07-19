@@ -27,14 +27,14 @@
                         <div class="seat-stats">
                             <span class="stat-item">
                                 <span class="seat-indicator free"></span>
-                                Free: <span id="freeSeats"></span>
+                                Free: <span id="freeSeats">{% if free_seats is not none %}{{ free_seats }}{% else %}0{% endif %}</span>
                             </span>
                             <span class="stat-item">
                                 <span class="seat-indicator occupied"></span>
-                                Occupied: <span id="occupiedSeats"></span>
+                                Occupied: <span id="occupiedSeats">{% if occupied_seats is not none %}{{ occupied_seats }}{% else %}0{% endif %}</span>
                             </span>
                             <span class="stat-item">
-                                Total: <span id="totalSeats">20</span>
+                                Total: <span id="totalSeats">{% if total_seats is not none %}{{ total_seats }}{% else %}0{% endif %}</span>
                             </span>
                         </div>
                     </div>
@@ -79,21 +79,21 @@
                                 <div class="sensor-icon">🌡️</div>
                                 <div class="sensor-info">
                                     <h4>Temperature</h4>
-                                    <div class="sensor-value" id="temperature">22°C</div>
+                                    <div class="sensor-value" id="temperature">{% if temperature is not none %}{{ temperature }}{% else %}0{% endif %}</div>
                                 </div>
                             </div>
                             <div class="sensor-item">
                                 <div class="sensor-icon">💧</div>
                                 <div class="sensor-info">
                                     <h4>Humidity</h4>
-                                    <div class="sensor-value" id="humidity">60%</div>
+                                    <div class="sensor-value" id="humidity">{% if humidity is not none %}{{ humidity }}{% else %}0{% endif %}</div>
                                 </div>
                             </div>
                             <div class="sensor-item">
-                                <div class="sensor-icon">🌬️</div>
+                                <div class="sensor-icon">🔊</div>
                                 <div class="sensor-info">
-                                    <h4>Air Quality</h4>
-                                    <div class="sensor-value" id="airQuality">Good</div>
+                                    <h4>Sound Level</h4>
+                                    <div class="sensor-value" id="soundlevel">{% if soundlevel is not none %}{{ soundlevel }}{% else %}0{% endif %}</div>
                                 </div>
                             </div>
                             <div class="sensor-item">
@@ -109,7 +109,7 @@
                                             <span class="tick">Very Sunny</span>
                                         </div>
                                     </div>
-                                    <!-- <div class="light-level-text" id="lightLevelText">Dark</div> -->
+                                    <div class="light-level-text" id="lightLevelText">Dark</div>
                                 </div>
                             </div>
                         </div>
@@ -119,8 +119,106 @@
         </div>
 
         <!-- Hidden data for JavaScript -->
+        <!-- Hidden data for JavaScript -->
         <script type="application/json" id="dashboardRoomsData">{{ rooms | tojson if rooms else '[]' }}</script>
         <script type="application/json" id="dashboardSeatsData">{{ seats | tojson if seats else '[]' }}</script>
+        <!-- MQTT.js library from CDN -->
+        <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+        <script>
+            // MQTT connection setup
+            const mqttBrokerUrl = 'ws://192.168.188.40:9001'; // Example public broker
+            const mqttOptions = {
+                clientId: 'dashboard_' + Math.random().toString(16).substr(2, 8),
+                clean: true,
+                connectTimeout: 4000,
+                reconnectPeriod: 4000,
+            };
+
+            let mqttClient = null;
+
+            function connectMQTT() {
+                mqttClient = mqtt.connect(mqttBrokerUrl, mqttOptions);
+
+                mqttClient.on('connect', function () {
+                    console.log('Connected to MQTT broker');
+
+                    mqttClient.subscribe('library/SR_1/Sensor/#', function (err) {
+                        if (!err) {
+                            console.log('Subscribed to library/SR_1/Sensor');
+                            // publish on new input of outside lightlevel slider
+                            document.getElementById('lightLevelSlider').addEventListener('input', function () {
+                                const lightlevel = this.value;
+                                mqttClient.publish('library/SR_1/Sensor/Outside_Light',
+                                    `{'Device': 'Outside_Light', 'Value': '${lightlevel}', 'TimeStamp': '${new Date().toLocaleTimeString()}'}`,
+                                    { qos: 1, retain: true });
+                            });
+                        } else if (err.message === 'Invalid topic') {
+                            console.error('Invalid topic for subscription:', err);
+                        } else {
+                            console.error('Subscription error:', err);
+                        }
+                    });
+                    
+                });
+
+                mqttClient.on('error', function (err) {
+                    console.error('MQTT connection error:', err);
+                });
+
+                mqttClient.on('reconnect', function () {
+                    console.log('Reconnecting to MQTT broker...');
+                });
+
+                mqttClient.on('message', function (topic, message) {
+                // message is Buffer
+                    console.log(message.toString())
+                    const datafrommessage = message.toString();
+                    console.log('Received message:', datafrommessage);
+                    //Replace the ' with " in the message
+                    message = datafrommessage.replace(/'/g, '"');
+                    console.log('Parsed message:', message);
+                    try {
+                        const data = JSON.parse(message.toString());
+                        // console.log('Received message:', data);
+
+                        // Update sensor values in the dashboard
+                        if (data.Device === 'Temperature_Sensor') {
+                            document.getElementById('temperature').textContent = data.Value + '°C';
+                        } else if (data.Device === 'Humidity_Sensor') {
+                            document.getElementById('humidity').textContent = data.Value + '%';
+                        } else if (data.Device === 'Sound_Sensor') {
+                            document.getElementById('soundlevel').textContent = data.Value;
+                        } else if (data.Device === 'Light_Sensor') {
+                            document.getElementById('lighting').value = data.Value;
+                            updateLightLevel();
+                        }
+                    } catch (e) {
+                        console.error('Error parsing MQTT message:', e);
+                    }
+                });
+                // try{
+                //     const data = JSON.parse(message);
+                //     console.log('Received message:', data);
+
+                //     // Update sensor values in the dashboard
+                //     if (data.Device === 'Temperature_Sensor') {
+                //         document.getElementById('temperature').textContent = data.Value + '°C';
+                //     } if (data.Device === 'Humidity_Sensor') {
+                //         document.getElementById('humidity').textContent = data.Value + '%';
+                //     } if (data.Device === 'Sound_Sensor') {
+                //         document.getElementById('soundlevel').textContent = data.Value;
+                //     } if (data.Device === 'Light_Sensor') {
+                //         document.getElementById('lighting').value = data.Value;
+                //         updateLightLevel();
+                //     }
+                // } catch (e) {
+                //     console.error('Error parsing MQTT message:', e);
+                // }
+            // }
+        }
+            // Call connectMQTT on page load
+            connectMQTT();
+        </script>
     </body>
 </html>
 
@@ -270,7 +368,7 @@
     }
     
     console.log('Light level changed to:', text.textContent);
-    
+
     // Optional: Send to server
     updateLightLevelOnServer(value);
 }

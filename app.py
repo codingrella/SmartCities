@@ -12,6 +12,9 @@ import cryptography.fernet
 import rsa
 import hashlib
 import paho.mqtt.client as mqtt_client
+import paho.mqtt.publish as mqtt_publish
+
+mqtt_publish.single("library/SR_1/Plugwise/Light", payload="an", qos=1, hostname="192.168.188.40", port=1883)
 
 app = Flask(__name__, template_folder='template', static_folder='static')
 socketio = SocketIO(app)
@@ -181,6 +184,10 @@ def admin_page():
     time_slots = generate_time_slots()
     
     conn = get_connection_to_db()
+    if not conn:
+        # Fallback: Return admin page with empty data when database is unavailable
+        print("Database unavailable, using empty data for admin page")
+        return render_template('adminPage.html', rooms=[], seats=[], time_slots=time_slots)
 
     try:
         cur = conn.cursor()
@@ -323,13 +330,13 @@ def update_light_level():
 @app.route('/api/seating-plan')
 def seating_plan():
     conn = get_connection_to_db()
-    # if not conn:
-    #     # Return sample data if database is unavailable
-    #     sample_data = [
-    #         {'id': i, 'name': f'Seat {i}', 'occupied': random.choice([True, False]), 'room': 'SR1'}
-    #         for i in range(1, 21)
-    #     ]
-    #     return jsonify(sample_data)
+    if not conn:
+        # Return sample data if database is unavailable
+        sample_data = [
+            {'id': i, 'name': f'Seat {i}', 'occupied': random.choice([True, False]), 'room': 'SR1'}
+            for i in range(1, 21)
+        ]
+        return jsonify(sample_data)
     
     try:
         cur = conn.cursor()

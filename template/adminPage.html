@@ -13,11 +13,34 @@
         <div class="container">
             <div class="header-section">
                 <h1>Admin Dashboard</h1>
-                <p>Manage the library and its resources.</p>
             </div>
             <div class="container-row">
+
             <!-- Booking form with User ID and Password-->
              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Set Threshold for FF Planner</h3>
+                        <button type="button" class="btn-close" aria-label="Close" onclick="toggleThresholdCard()"></button>
+                    </div>
+                    <div class="threshold-section card-body" id="thresholdCardBody">
+                        <div class="form-group d-flex align-items-center mb-3">
+                            <span class="me-2"><i class="bi bi-thermometer-half"></i></span>
+                            <label for="temperatureThreshold" class="me-2 mb-0">Temperature:</label>
+                            <input type="number" id="lowTemperatureThreshold" name="lowTemperatureThreshold" class="form-control w-auto" value="22" min="15" max="22">
+                            <input type="number" id="highTemperatureThreshold" name="highTemperatureThreshold" class="form-control w-auto" value="25" min="22" max="28">
+                        </div>
+                        <div class="form-group d-flex align-items-center mb-3">
+                            <span class="me-2"><i class="bi bi-droplet-half"></i></span>
+                            <label for="humidityThreshold" class="me-2 mb-0">Humidity:</label>
+                            <input type="number" id="humidityThreshold" name="humidityThreshold" class="form-control w-auto" value="50" min="30" max="70">
+                        </div>
+                        <div class="form-group d-flex align-items-center mb-3">
+                            <span class="me-2"><i class="bi bi-lightbulb"></i></span>
+                            <label for="lightThreshold" class="me-2 mb-0">Light:</label>
+                            <input type="number" id="lightThreshold" name="lightThreshold" class="form-control w-auto" value="300" min="100" max="500">
+                        </div>
+                        <button type="button" class="btn btn-primary" id="saveThresholdsButton">Save Thresholds</button>
+                    </div>
              <div class="user-authentication">
                 <div class="form-group">
                     <label for="userId">User ID:</label>
@@ -61,8 +84,36 @@
                     </div>
                 </div>
             </div>
+            </div>
             
-            <!-- Room Selection -->
+            <!-- Seating Plan -->
+            <div class="card">
+            <div class="seating-section">
+                <h3>Select Your Seat</h3>
+                <div class="seat-legend">
+                    <div class="legend-item">
+                        <div class="seat-indicator free"></div>
+                        <span>Available:</span>
+                        <!-- show number of seats available -->
+                        <span id="availableSeatsCount">{{ availableSeatsCount }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="seat-indicator occupied"></div>
+                        <span>Occupied:</span>
+                        <span id="occupiedSeatsCount">{{ occupiedSeatsCount }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="seat-indicator selected"></div>
+                        <!-- Show selected seat number -->
+                         <!-- if selectedSeatNumber is set -->
+                         {%if selectedSeatNumber %}
+                        <span id="selectedSeatNumber">{{ selectedSeatNumber }}</span>
+                         {%else %}
+                        <span id="selectedSeatNumber">None</span>
+                            {%endif %}
+                    </div>
+                </div>
+                <!-- Room Selection -->
             <div class="room-selection">
                 <label for="rooms">Select Room:</label>
                 <select name="room" id="rooms" onchange="loadSeatsForRoom()">
@@ -82,40 +133,9 @@
                 </div>
              </div>
             </div>
-
-
-            <!-- Seating Plan -->
-            <div class="card">
-            <div class="seating-section">
-                <h3>Select Your Seat</h3>
-                <div class="seat-legend">
-                    <div class="legend-item">
-                        <div class="seat-indicator free"></div>
-                        <span>Available:</span>
-                        <!-- show number of seats available -->
-                        <span id="availableSeatsCount">0</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="seat-indicator occupied"></div>
-                        <span>Occupied:</span>
-                        <span id="occupiedSeatsCount">0</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="seat-indicator selected"></div>
-                        <!-- Show selected seat number -->
-                         <!-- if selectedSeatNumber is set -->
-                         {%if selectedSeatNumber %}
-                        <span id="selectedSeatNumber">{{ selectedSeatNumber }}</span>
-                         {%else %}
-                        <span id="selectedSeatNumber">None</span>
-                            {%endif %}
-                    </div>
-                </div>
-                
-                <div class="seat-container" id="seatsContainer">
-                    <div class="seating-grid" id="seatsGrid">
-                        <!-- Seats will be loaded here dynamically -->
-                    </div>
+            <div class="seat-container" id="seatsContainer">
+                <div class="seating-grid" id="seatsGrid">
+                    <!-- Seats will be loaded here dynamically -->
                 </div>
             </div>
             
@@ -131,6 +151,67 @@
         <script type="application/json" id="roomsData">{{ rooms | tojson }}</script>
         <script type="application/json" id="seatsData">{{ seats | tojson }}</script>
         <script type="application/json" id="timeSlotsData">{{ time_slots | tojson }}</script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
+        <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+        <script>
+            const mqttBrokerUrl = 'ws://192.168.188.40:9001';
+            const mqttOptions = {
+                clientId: 'dashboard_' + Math.random().toString(16).substr(2, 8),
+                clean: true,
+                connectTimeout: 4000,
+                reconnectPeriod: 4000,
+            };
+
+            let mqttClient = null;
+
+            function connectMQTT() {
+                mqttClient = mqtt.connect(mqttBrokerUrl, mqttOptions);
+
+                mqttClient.on('connect', function () {
+                    console.log('Connected to MQTT broker');
+                    mqttClient.subscribe('library/SR_1/Sensor/#', function (err) {
+                        if (!err) {
+                            console.log('Subscribed to library/SR_1/Sensor');
+                            //publish threshold values
+                            // const lowTemperatureThreshold = document.getElementById('lowTemperatureThreshold').value;
+                            // const highTemperatureThreshold = document.getElementById('highTemperatureThreshold').value;
+                            document.getElementById('saveThresholdsButton').addEventListener('click', function() {
+                                const lowTemperatureThreshold = document.getElementById('lowTemperatureThreshold').value;
+                                const highTemperatureThreshold = document.getElementById('highTemperatureThreshold').value;
+                                const humidityThreshold = document.getElementById('humidityThreshold').value;
+                                const lightThreshold = document.getElementById('lightThreshold').value;
+                                // Publish threshold values to MQTT topics
+                                console.log('Publishing thresholds:', {
+                                    lowTemperatureThreshold,
+                                    highTemperatureThreshold,
+                                    humidityThreshold,
+                                    lightThreshold
+                                });
+                                mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Temperature_Low',
+                                    `{'Device': 'Temperature_Sensor', 'Threshold_Value': '${lowTemperatureThreshold}'}`,
+                                    { qos: 1, retain: true });
+                                mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Temperature_High',
+                                    `{'Device': 'Temperature_Sensor', 'Threshold_Value': '${highTemperatureThreshold}'}`,
+                                    { qos: 1, retain: true });
+                                mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Humidity',
+                                    `{'Device': 'Humidity_Sensor', 'Threshold_Value': '${humidityThreshold}'}`,
+                                    { qos: 1, retain: true });
+                                mqttClient.publish('library/SR_1/Sensor_Threshold/Threshold_Light',
+                                    `{'Device': 'Light_Sensor', 'Threshold_Value': '${lightThreshold}'}`,
+                                    { qos: 1, retain: true });
+                            });
+
+                        } else if (err.message === 'Invalid topic') {
+                            console.error('Invalid topic for subscription:', err);
+                        } else {
+                            console.error('Subscription error:', err);
+                        }
+                    });
+                    
+                });
+            }
+            connectMQTT();
+        </script>
     </body>
 </html>
 
@@ -276,6 +357,33 @@
             bookingInfo.value = 'Please fill in all fields.';
         }
     }
+
+
+    function toggleThresholdCard() {
+        const cardBody = document.getElementById('thresholdCardBody');
+        cardBody.style.display = cardBody.style.display === 'none' ? 'block' : 'none';
+    }
+    function saveThresholds() {
+        const temp = document.getElementById('temperatureThreshold').value;
+        const humidity = document.getElementById('humidityThreshold').value;
+        const light = document.getElementById('lightThreshold').value;
+        // publish thresholds to server with mqtt
+        // mqttClient.publish('library/SR_1/Sensor/Threshold_Temperature',
+        //     `{'Device': 'Temperature_Sensor_Low', 'Threshold_Value': '${lowTemperatureThreshold}'}`,
+        //     { qos: 1, retain: true });
+        // mqttClient.publish('library/SR_1/Sensor/Threshold_Temperature',
+        //     `{'Device': 'Temperature_Sensor_High', 'Threshold_Value': '${highTemperatureThreshold}'}`,
+        //     { qos: 1, retain: true });
+        // mqttClient.publish('library/SR_1/Sensor/Threshold_Humidity',
+        //     `{'Device': 'Humidity_Sensor', 'Threshold_Value': '${humidityThreshold}'}`,
+        //     { qos: 1, retain: true });
+        // mqttClient.publish('library/SR_1/Sensor/Threshold_Light',
+        //     `{'Device': 'Light_Sensor', 'Threshold_Value': '${lightThreshold}'}`,
+        //     { qos: 1, retain: true });
+        //alert(`Thresholds saved:\nTemperature: ${temp}\nHumidity: ${humidity}\nLight: ${light}`);
+    }
+
+    
 
     // LogIn with rsa to encode and decode
     // function secureLogin() {
