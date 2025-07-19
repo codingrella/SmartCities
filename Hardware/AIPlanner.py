@@ -214,32 +214,28 @@ class AIPlannerInterface:
         self.createAIProblemFile(inits, goals)
         
         
-    def getPlan(self):
+    def getPlanSteps(self, plannerResponse):
         planSteps = []
         
-        dirname = os.path.dirname(__file__)
-        path = dirname + PLAN_RESULT_PATH
-        
-        with open(path, encoding='utf-8') as file:
-            my_data = file.read()
-            
-        if 'ff: found legal plan as follows' in my_data:
-            idx1 = my_data.find('step')
-            idx2 = my_data.find('time spent:', idx1 + len('step'))
+        if 'ff: found legal plan as follows' in plannerResponse:
+            idx1 = plannerResponse.find('\nstep')
+            idx2 = plannerResponse.find('\n\ntime spent:', idx1 + len('step'))
             
             if idx1 != -1 and idx2 != -1:
-                combinedSteps = my_data[idx1 + len('step'):idx2]
+                combinedSteps = plannerResponse[idx1 + len('step'):idx2]
                 combinedSteps = combinedSteps.split('\n')
+                
+                print(combinedSteps)
                 
                 for step in combinedSteps:
                     action = step.split(':')[1]
+                    # remove white noise, but keep spaces between words
                     action = " ".join(action.split()).split(' ')
                     planSteps.append(action)
         return planSteps
                     
     
     def executePlan(self, plan):
-        print(plan)
         steps = plan.split(')')
         
         for step in steps:
@@ -252,15 +248,10 @@ class AIPlannerInterface:
                 self.actions[elements[0]](0)
                 
         print(steps)
-            
-        
+                 
         
 if __name__ == "__main__":
     planner = AIPlannerInterface('SR_1')
-    time.sleep(5)
-    
-    resultPlanPath = os.path.dirname(__file__) + PLAN_RESULT_PATH
-    print(resultPlanPath)
     
     while True:
         time1 = datetime.strptime(planner.time_lastMotionDetected, '%H:%M:%S')
@@ -269,33 +260,33 @@ if __name__ == "__main__":
         
         # if OPENING_HOUR.time() >= datetime.now().time() or datetime.now().time() >= CLOSING_HOUR.time():
         #     print('CLOSED')
+        
         if not planner.replannedSinceMotionToggle and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
             print('REPLANNING')
             planner.startPlanning()
             time.sleep(5)
             planner.replannedSinceMotionToggle = True
-            # os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl > PDDL_Files/Plan.txt")
-            # os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
-    
-            result = subprocess.check_output(["./runPlan.sh"])
-            print(result)
+            plannerResponse = subprocess.check_output(["./runPlan.sh"])
+            print(plannerResponse)
             time.sleep(5)
-            # plan = planner.getPlan()
-            # planner.executePlan(plan)
+            planSteps = planner.getPlanSteps(plannerResponse)
+            print(planSteps)
+            
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
             time.sleep(5)
-            os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
+            plannerResponse = subprocess.check_output(["./runPlan.sh"])
+            print(plannerResponse)
             time.sleep(5)
-            plan = planner.getPlan()
-            planner.executePlan(plan)
+            planner.executePlan(plannerResponse)
+            
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
             planner.startPlanning()
             time.sleep(5)
-            os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
+            plannerResponse = subprocess.check_output(["./runPlan.sh"])
+            print(plannerResponse)
             time.sleep(5)
-            plan = planner.getPlan()
-            planner.executePlan(plan)
+            planner.executePlan(plannerResponse)
     
         
     
