@@ -14,7 +14,7 @@ from MQTTInterface import MQTTSubscriber
 from MQTTInterface import MQTTPublisher
 
 
-MAX_RANGE_MOTION_DETECTED = 10            # 5 minutes
+MAX_RANGE_MOTION_DETECTED = 5*60            # 5 minutes
 OPENING_HOUR = datetime.strptime('08:00:00', '%H:%M:%S')
 CLOSING_HOUR = datetime.strptime('20:00:00', '%H:%M:%S')
 
@@ -99,6 +99,9 @@ class AIPlannerInterface:
                 # self.time_toggleOneDetected = res['TimeStamp']
                 self.motionToggleZero = False
                 if int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
+                    print(time1)
+                    print(time2)
+                    print(difference)
                     self.motionToggleOne = True
                 print('Motion toggle to 1')
             elif self.sensorValues[res['Device']] == 1 and res['Value'] == 0:
