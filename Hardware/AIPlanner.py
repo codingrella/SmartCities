@@ -44,21 +44,21 @@ class AIPlannerInterface:
                                  'hum_lower': 50,
                                  'hum_upper': 60 }
         
-        self.actions = { 'turnonac': self._setAC,
-                         'turnoffac': self._setAC,
-                         'turnonheater': self._setHeater,
-                         'turnoffheater': self._setHeater,
-                         'turnonlight': self._setLight,
-                         'turnofflight': self._setLight,
-                         'openblinds': self._setBlinds,
-                         'closeblinds': self._setBlinds
+        self.actions = { 'TURNONAC': self._setAC,
+                         'TURNOFFAC': self._setAC,
+                         'TURNONHEATER': self._setHeater,
+                         'TURNOFFHEATER': self._setHeater,
+                         'TURNONLIGHT': self._setLight,
+                         'TURNOFFLIGHT': self._setLight,
+                         'OPENBLINDS': self._setBlinds,
+                         'CLOSEBLINDS': self._setBlinds
             }
         
         self.replannedSinceMotionToggle = False
         self.time_lastMotionDetected = datetime.now().strftime("%H:%M:%S")
         self.room = room
         
-        pub = MQTTPublisher()
+        self.pub = MQTTPublisher()
         
         sub = MQTTSubscriber(room, '+', '+')
         sub.client.on_message = self.on_message
@@ -229,24 +229,19 @@ class AIPlannerInterface:
                     if ':' in step:
                         action = step.split(':')[1]
                         # remove white noise, but keep spaces between words
-                        action = " ".join(action.split()).split(' ')
+                        action = " ".join(action.split())
                         planSteps.append(action)
         return planSteps
                     
     
-    def executePlan(self, plan):
-        steps = plan.split(')')
-        
+    def executePlan(self, steps):        
         for step in steps:
-            step.replace('(' ,'')
             elements = step.split(' ')
             
-            if 'on' in elements[0] or 'open' in elements[0]:
+            if 'ON' in elements[0] or 'OPEN' in elements[0]:
                 self.actions[elements[0]](1)
-            elif 'off' in elements[0] or 'close' in elements[0]:
+            elif 'OFF' in elements[0] or 'CLOSE' in elements[0]:
                 self.actions[elements[0]](0)
-                
-        print(steps)
                  
         
 if __name__ == "__main__":
@@ -269,7 +264,7 @@ if __name__ == "__main__":
             print(plannerResponse)
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
-            print(planSteps)
+            planner.executePlan(planSteps)
             
         elif planner.sensorValues['Outside_Sensor'] == 2:
             planner.startPlanning()
