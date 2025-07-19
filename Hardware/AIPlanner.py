@@ -77,10 +77,12 @@ class AIPlannerInterface:
         elif 'off' == msg.payload.decode():
             self.actions['TURNOFFLIGHT'](0)
             return
-        elif 'up' == msg.payload.decode(): 
+        # elif 'up' == msg.payload.decode(): 
+        elif 'start' == msg.payload.decode(): 
             self.actions['OPENBLINDS'](1)
             return
-        elif 'down' == msg.payload.decode():
+        # elif 'down' == msg.payload.decode():
+        elif 'stop' == msg.payload.decode():
             self.actions['CLOSEBLINDS'](0)
             return
        
@@ -287,6 +289,8 @@ if __name__ == "__main__":
         
         if planner.motionToggleOne or (planner.motionToggleZero and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED): 
             print('REPLANNING')
+            print(planner.motionToggleOne)
+            print(planner.motionToggleZero)
             planner.startPlanning()
             time.sleep(5)
             planner.motionToggleOne = False
