@@ -54,9 +54,13 @@ class AIPlannerInterface:
                          'CLOSEBLINDS': self._setBlinds
             }
         
-        self.replannedSinceMotionToggle = False
-        self.time_lastMotionDetected = datetime.now().strftime("%H:%M:%S")
         self.room = room
+        
+        self.motionToggleOne = False
+        self.motionToggleZero = False
+        self.time_toggleZeroDetected = datetime.now().strftime("%H:%M:%S")
+        self.time_toggleOneDetected = datetime.now().strftime("%H:%M:%S")
+        
         
         self.pub = MQTTPublisher()
         
@@ -69,8 +73,41 @@ class AIPlannerInterface:
         
     
     def on_message(self, client, userdata, msg):
-       # print(msg.payload.decode())
+        # On manual intervention from UI
+        if 'on' == msg.payload.decode(): 
+            self.actions['TURNONLIGHT'](1)
+            return
+        elif 'off' == msg.payload.decode():
+            self.actions['TURNOFFLIGHT'](0)
+            return
+        elif 'up' == msg.payload.decode(): 
+            self.actions['OPENBLINDS'](1)
+            return
+        elif 'down' == msg.payload.decode():
+            self.actions['CLOSEBLINDS'](0)
+            return
+       
+        # On hardware updates
         res = eval(msg.payload.decode())
+        
+        time1 = datetime.strptime(self.time_toggleZeroDetected, '%H:%M:%S')
+        time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
+        difference = time2 - time1
+        
+        if res['Device'] == 'Motion_Sensor':
+            if self.actuatorValues[res['Device']] == 0 and res['Value'] == 1:
+                self.actuatorValues[res['Device']] = 1
+                self.time_toggleOneDetected = res['TimeStamp'].strftime("%H:%M:%S")
+                self.motionToggleZero = False
+                if difference >= MAX_RANGE_MOTION_DETECTED:
+                    self.motionToggleOne = True
+                print('Motion toggle to 1')
+            elif self.actuatorValues[res['Device']] == 1 and res['Value'] == 0:
+                self.actuatorValues[res['Device']] = 0
+                self.time_toggleZeroDetected = res['TimeStamp'].strftime("%H:%M:%S")
+                self.motionToggleZero = True
+                self.motionToggleOne = False
+                print('Motion toggle to 0')
         
         if 'Sensor' in res['Device']:
             self.sensorValues[res['Device']] = res['Value']
@@ -80,10 +117,6 @@ class AIPlannerInterface:
             self.thresholdValues['temp_upper'] = float(res['Value'])
         elif 'Huminidty_Threshold' != res['Device'] and 'Light' != res['Device']:
             self.actuatorValues[res['Device']] = res['Value']
-            
-        if res['Device'] == 'Motion_Sensor' and res['Value'] == 1:
-            self.time_lastMotionDetected = res['TimeStamp']
-            self.replannedSinceMotionToggle = False
     
     
     def createAIProblemFile(self, inits, goals):
@@ -248,39 +281,41 @@ if __name__ == "__main__":
     planner = AIPlannerInterface('SR_1')
     
     while True:
-        time1 = datetime.strptime(planner.time_lastMotionDetected, '%H:%M:%S')
+        time1 = datetime.strptime(planner.time_toggleZeroDetected, '%H:%M:%S')
         time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
         difference = time2 - time1
         
         # if OPENING_HOUR.time() >= datetime.now().time() or datetime.now().time() >= CLOSING_HOUR.time():
         #     print('CLOSED')
         
-        if not planner.replannedSinceMotionToggle and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
+        if planner.motionToggleOne or (planner.motionToggleZero and difference >= MAX_RANGE_MOTION_DETECTED): 
             print('REPLANNING')
             planner.startPlanning()
             time.sleep(5)
-            planner.replannedSinceMotionToggle = True
+            planner.motionToggleOne = False
+            planner.motionToggleZero = False
             plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
-            print(plannerResponse)
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
             planner.executePlan(planSteps)
             
         elif planner.sensorValues['Outside_Sensor'] == 2:
+            print('REPLANNING')
             planner.startPlanning()
             time.sleep(5)
-            plannerResponse = subprocess.check_output(["./runPlan.sh"])
-            print(plannerResponse)
+            plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
             time.sleep(5)
-            planner.executePlan(plannerResponse)
+            planSteps = planner.getPlanSteps(plannerResponse)
+            planner.executePlan(planSteps)
             
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
+            print('REPLANNING')
             planner.startPlanning()
             time.sleep(5)
-            plannerResponse = subprocess.check_output(["./runPlan.sh"])
-            print(plannerResponse)
+            plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
             time.sleep(5)
-            planner.executePlan(plannerResponse)
+            planSteps = planner.getPlanSteps(plannerResponse)
+            planner.executePlan(planSteps)
     
         
     
