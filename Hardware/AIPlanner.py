@@ -56,7 +56,7 @@ class AIPlannerInterface:
         self.motionToggleOne = False
         self.motionToggleZero = True
         self.time_toggleZeroDetected = datetime.now().strftime("%H:%M:%S")
-        self.time_toggleOneDetected = datetime.now().strftime("%H:%M:%S")
+        # self.time_toggleOneDetected = datetime.now().strftime("%H:%M:%S")
         
         
         self.pub = MQTTPublisher()
@@ -94,14 +94,14 @@ class AIPlannerInterface:
         if res['Device'] == 'Motion_Sensor':
             if self.sensorValues[res['Device']] == 0 and res['Value'] == 1:
                 self.sensorValues[res['Device']] = 1
-                self.time_toggleOneDetected = datetime.strptime(res['TimeStamp'], '%H:%M:%S').time()
+                # self.time_toggleOneDetected = res['TimeStamp']
                 self.motionToggleZero = False
                 if int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
                     self.motionToggleOne = True
                 print('Motion toggle to 1')
             elif self.sensorValues[res['Device']] == 1 and res['Value'] == 0:
                 self.sensorValues[res['Device']] = 0
-                self.time_toggleZeroDetected = datetime.strptime(res['TimeStamp'], '%H:%M:%S').time()
+                self.time_toggleZeroDetected = res['TimeStamp']
                 self.motionToggleZero = True
                 self.motionToggleOne = False
                 print('Motion toggle to 0')
