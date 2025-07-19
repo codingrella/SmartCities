@@ -75,10 +75,10 @@ class AIPlannerInterface:
         if 'Sensor' in res['Device']:
             self.sensorValues[res['Device']] = res['Value']
         elif 'Threshold_Low' in res['Device'] and 'Temp' in res['Device']:
-            self.thresholdValues['temp_lower'] = res['Value']
+            self.thresholdValues['temp_lower'] = float(res['Value'])
         elif 'Threshold_High' in res['Device'] and 'Temp' in res['Device']:
-            self.thresholdValues['temp_upper'] = res['Value']    
-        elif 'Huminidty_Threshold' != res['Device'] and 'Light_Threshold' != res['Device']:
+            self.thresholdValues['temp_upper'] = float(res['Value'])
+        elif 'Huminidty_Threshold' != res['Device'] and 'Light' != res['Device']:
             self.actuatorValues[res['Device']] = res['Value']
             
         if res['Device'] == 'Motion_Sensor' and res['Value'] == 1:
