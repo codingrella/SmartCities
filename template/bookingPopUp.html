@@ -74,12 +74,12 @@
                         <div class="seat-indicator free"></div>
                         <span>Available:</span>
                         <!-- show number of seats available -->
-                        <span id="availableSeatsCount">0</span>
+                        <span id="availableSeatsCount">{{ availableSeatsCount }}</span>
                     </div>
                     <div class="legend-item">
                         <div class="seat-indicator occupied"></div>
                         <span>Occupied:</span>
-                        <span id="occupiedSeatsCount">0</span>
+                        <span id="occupiedSeatsCount">{{ occupiedSeatsCount }}</span>
                     </div>
                     <div class="legend-item">
                         <div class="seat-indicator selected"></div>
@@ -88,7 +88,7 @@
                          {%if selectedSeatNumber %}
                         <span id="selectedSeatNumber">{{ selectedSeatNumber }}</span>
                          {%else %}
-                        <span id="selectedSeatNumber">None</span>
+                        <span id="selectedSeatNumber">{% if selectedSeatNumber is not none %}{{ selectedSeatNumber }}{% else %}None{% endif %}</span>
                             {%endif %}
                     </div>
                 </div>
