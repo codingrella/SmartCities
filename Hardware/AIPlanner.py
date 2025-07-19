@@ -35,7 +35,6 @@ class AIPlannerInterface:
                                 'Lights': 1,
                                 'AC': 1,
                                 'Heater': 0 }
-        
         self.thresholdValues = { 'inside_isLight': 600,
                                  'outside_isDark': 0,
                                  'outside_isVerySunny': 2,
@@ -43,7 +42,6 @@ class AIPlannerInterface:
                                  'temp_upper': 26,
                                  'hum_lower': 50,
                                  'hum_upper': 60 }
-        
         self.actions = { 'TURNONAC': self._setAC,
                          'TURNOFFAC': self._setAC,
                          'TURNONHEATER': self._setHeater,
@@ -51,13 +49,12 @@ class AIPlannerInterface:
                          'TURNONLIGHT': self._setLight,
                          'TURNOFFLIGHT': self._setLight,
                          'OPENBLINDS': self._setBlinds,
-                         'CLOSEBLINDS': self._setBlinds
-            }
+                         'CLOSEBLINDS': self._setBlinds }
         
         self.room = room
         
         self.motionToggleOne = False
-        self.motionToggleZero = False
+        self.motionToggleZero = True
         self.time_toggleZeroDetected = datetime.now().strftime("%H:%M:%S")
         self.time_toggleOneDetected = datetime.now().strftime("%H:%M:%S")
         
