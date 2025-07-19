@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 
-from plugwise.stick import Stick
-from plugwise import Circle
+from plugwise import *
+import plugwise.util
 
 
 stick = Stick("/dev/ttyUSB0")  # Adjust the path to your Stick device
@@ -15,12 +15,16 @@ def plugwise_light(payload):
     elif payload == "off":
         circle.switch_off()
 
+def on_connect(client, userdata, flags, rc):
+    client.subscribe("library/SR_1/Plugwise/Light")
+
+
 def on_message(client, userdata, message):
-    print(f"MQTT: {message.topic } {message.payload.decode()}")
+    print(f"MQTT: {message.topic} {message.payload.decode()}")
     plugwise_light(message.payload.decode())
 
 client = mqtt.Client()
-client.connect("192.168.188.40", 1883, 60)  # Replace with your MQTT broker address
-client.subscribe("library/SR_1/Plugwise/Light")
+client.on_connect = on_connect
 client.on_message = on_message
+client.connect("192.168.188.40", 1883, 60)  # Replace with your MQTT broker address
 client.loop_start()
