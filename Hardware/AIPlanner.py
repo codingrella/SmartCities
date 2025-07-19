@@ -292,7 +292,7 @@ if __name__ == "__main__":
             planner.motionToggleOne = False
             planner.motionToggleZero = False
             try: plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
-            except: print('ERROR')
+            except Exception as e: print(e)
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
             print(planSteps)
@@ -303,7 +303,7 @@ if __name__ == "__main__":
             planner.startPlanning()
             time.sleep(5)
             try: plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
-            except: print('ERROR')
+            except Exception as e: print(e)
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
             print(planSteps)
@@ -314,7 +314,7 @@ if __name__ == "__main__":
             planner.startPlanning()
             time.sleep(5)
             try: plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
-            except: print('ERROR')
+            except Exception as e: print(e)
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
             print(planSteps)
