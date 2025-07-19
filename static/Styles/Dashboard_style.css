@@ -118,13 +118,20 @@ button {
 .seating-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    align-items: center;
     gap: 10px;
-    margin-bottom: 20px;
     padding: 20px;
-    background-color: #f8f9fa;
+    border: transparent;
     border-radius: 8px;
-    max-width: 400px;
-    margin: 0 auto 20px auto;
+    background-color: #f8f9fa;
+    min-height: 200px;
+}
+
+.seat-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
 .seat {

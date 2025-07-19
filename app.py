@@ -320,27 +320,26 @@ def seating_plan():
     try:
         cur = conn.cursor()
         # Get seat occupancy data
-        cur.execute("SELECT roomid, seatid, status FROM public.seats WHERE roomid = %s", ('SR1',))
+        cur.execute("SELECT roomid, seatid, isoccupied FROM public.seats WHERE roomid = 'SR_1'")
         seat_data = cur.fetchall()
-        
+        #print(seat_data)
+
         # Create seating plan
         seating_plan = []
-        for i in range(1, 21):  # 20 seats for SR1
-            occupied = False
-            for seat in seat_data:
-                if seat[1] == i and seat[2] == 'occupied':
-                    occupied = True
-                    break
-            
+        
+        for i in range(1,13):
+            # get occupancy status for each seat from the database
+            occupied = seat_data[i-1][2]
             seating_plan.append({
                 'id': i,
                 'name': f'Seat {i}',
                 'occupied': occupied,
                 'room': 'SR1'
             })
-        
+        #print(seating_plan)
         conn.close()
-        return jsonify(seating_plan)
+        #print(seating_plan)
+        return seating_plan
         
     except Exception as e:
         if conn:
