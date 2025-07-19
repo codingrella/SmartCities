@@ -6,12 +6,12 @@
 import os
 import time
 import shutil
+import subprocess
 import threading
 
 from datetime import datetime
 from MQTTInterface import MQTTSubscriber
 from MQTTInterface import MQTTPublisher
-import valueThresholds
 
 
 MAX_RANGE_MOTION_DETECTED = 10            # 5 minutes
@@ -35,6 +35,14 @@ class AIPlannerInterface:
                                 'Lights': 1,
                                 'AC': 1,
                                 'Heater': 0 }
+        
+        self.thresholdValues = { 'inside_isLight': 600,
+                                 'outside_isDark': 0,
+                                 'outside_isVerySunny': 2,
+                                 'temp_lower': 21,
+                                 'temp_upper': 26,
+                                 'hum_lower': 50,
+                                 'hum_upper': 60 }
         
         self.actions = { 'turnonac': self._setAC,
                          'turnoffac': self._setAC,
@@ -66,7 +74,11 @@ class AIPlannerInterface:
         
         if 'Sensor' in res['Device']:
             self.sensorValues[res['Device']] = res['Value']
-        else:
+        elif 'Threshold_Low' in res['Device'] and 'Temp' in res['Device']:
+            self.thresholdValues['temp_lower'] = res['Value']
+        elif 'Threshold_High' in res['Device'] and 'Temp' in res['Device']:
+            self.thresholdValues['temp_upper'] = res['Value']    
+        elif 'Huminidty_Threshold' != res['Device'] and 'Light_Threshold' != res['Device']:
             self.actuatorValues[res['Device']] = res['Value']
             
         if res['Device'] == 'Motion_Sensor' and res['Value'] == 1:
@@ -115,31 +127,31 @@ class AIPlannerInterface:
         
        
     def _getHumidityInit(self):
-        if float(self.sensorValues['Humidity_Sensor']) < valueThresholds.hum_lower:
+        if float(self.sensorValues['Humidity_Sensor']) < self.thresholdValues['hum_lower']:
             return f'(hum_isGood {self.room})'
-        elif float(self.sensorValues['Humidity_Sensor']) < valueThresholds.temp_upper:
+        elif float(self.sensorValues['Humidity_Sensor']) < self.thresholdValues['temp_upper']:
             return f'(hum_isMid {self.room})'
         else:
             return f'(hum_isBad {self.room})'
         
     def _getTempInit(self):
-        if float(self.sensorValues['Temperature_Sensor']) < valueThresholds.temp_lower:
+        if float(self.sensorValues['Temperature_Sensor']) < self.thresholdValues['temp_lower']:
             return f'(temp_isCold {self.room})'
-        elif float(self.sensorValues['Temperature_Sensor']) < valueThresholds.temp_upper:
+        elif float(self.sensorValues['Temperature_Sensor']) < self.thresholdValues['temp_upper']:
             return f'(temp_isGood {self.room})'
         else:
             return f'(temp_isHot {self.room})'
         
     def _getInsideLightInit(self):
-        if int(self.sensorValues['Light_Sensor']) > valueThresholds.inside_isLight:
+        if int(self.sensorValues['Light_Sensor']) > self.thresholdValues['inside_isLight']:
             return f'(inside_isLight {self.room})'
         else:
             return ''
         
     def _getOutsideLightInit(self):
-        if int(self.sensorValues['Outside_Sensor']) == valueThresholds.outside_isDark:
+        if int(self.sensorValues['Outside_Sensor']) == self.thresholdValues['outside_isDark']:
             return f'(outside_isDark {self.room})'
-        elif int(self.sensorValues['Outside_Sensor']) == valueThresholds.outside_isVerySunny:
+        elif int(self.sensorValues['Outside_Sensor']) == self.thresholdValues['outside_isVerySunny']:
             return f'(outside_isVerySunny {self.room})'
         else:
             return ''
@@ -241,8 +253,6 @@ class AIPlannerInterface:
                 
         print(steps)
             
-            
-        
         
         
 if __name__ == "__main__":
@@ -265,7 +275,8 @@ if __name__ == "__main__":
             time.sleep(5)
             planner.replannedSinceMotionToggle = True
             # os.system(f"./../FF/FF-v2.3/ff –o PDDL_Files/Domain.pddl –f PDDL_Files/ProblemFile_SR_1.pddl > PDDL_Files/Plan.txt")
-            os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
+            # os.system(f"./../FF/FF-v2.3/ff –o /home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl –f /home/pi/SmartCities/Hardware/PDDL_Files/ProblemFile_SR_1.pddl")
+            result = subprocess.check_output(["./../FF/FF-v2.3/ff", "-o", "/home/pi/SmartCities/Hardware/PDDL_Files/Domain.pddl"])
             time.sleep(5)
             plan = planner.getPlan()
             planner.executePlan(plan)
