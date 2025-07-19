@@ -222,16 +222,16 @@ class AIPlannerInterface:
             idx2 = plannerResponse.find('\n\ntime spent:', idx1 + len('step'))
             
             if idx1 != -1 and idx2 != -1:
-                combinedSteps = plannerResponse[idx1 + len('step'):idx2]
+                combinedSteps = plannerResponse[idx1 + len('\nstep'):idx2]
                 combinedSteps = combinedSteps.split('\n')
                 
-                print(combinedSteps)
-                
                 for step in combinedSteps:
-                    action = step.split(':')[1]
                     # remove white noise, but keep spaces between words
-                    action = " ".join(action.split()).split(' ')
-                    planSteps.append(action)
+                    action = " ".join(step.split()).split(' ')
+                    if action != '':
+                        action = step.split(':')[1]
+                        action = " ".join(action.split()).split(' ')
+                        planSteps.append(action)
         return planSteps
                     
     
@@ -266,7 +266,7 @@ if __name__ == "__main__":
             planner.startPlanning()
             time.sleep(5)
             planner.replannedSinceMotionToggle = True
-            plannerResponse = subprocess.check_output(["./runPlan.sh"])
+            plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
             print(plannerResponse)
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
