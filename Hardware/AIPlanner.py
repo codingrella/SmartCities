@@ -294,6 +294,7 @@ if __name__ == "__main__":
             plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
+            print(planSteps)
             planner.executePlan(planSteps)
             
         elif planner.sensorValues['Outside_Sensor'] == 2:
@@ -303,6 +304,7 @@ if __name__ == "__main__":
             plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
+            print(planSteps)
             planner.executePlan(planSteps)
             
         elif datetime.now().minute == 0 or datetime.now().minute == 30:
@@ -312,6 +314,7 @@ if __name__ == "__main__":
             plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
+            print(planSteps)
             planner.executePlan(planSteps)
     
         
