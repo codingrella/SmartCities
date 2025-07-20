@@ -25,6 +25,8 @@ class setter(threading.Thread):
         self.room = room
         self.pub = MQTTPublisher()
         
+        
+    def startSubscriber(self):
         sub = MQTTSubscriber(self.room, 'Actuator', '#')
         sub.client.on_message = self.on_message
         
