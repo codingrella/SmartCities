@@ -43,6 +43,7 @@ if __name__ == "__main__":
     pub = MQTTPublisher()
     setActuators = setter('SR_1')
     setActuators.start()
+    setActuators.startSubscriber()
     
     while True:
         time.sleep(1)
