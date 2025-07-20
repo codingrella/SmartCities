@@ -37,12 +37,9 @@ class MQTTPublisher:
         
         
     def publish(self, room, deviceType, device, value):
-        if deviceType == 'Plugwise':
-            msg = value
-        else:
-            t = time.localtime()
-            current_time = time.strftime("%H:%M:%S", t)
-            msg = str({f'Device': device, 'Value': value, 'TimeStamp': current_time})
+        t = time.localtime()
+        current_time = time.strftime("%H:%M:%S", t)
+        msg = str({'Device': device, 'Value': value, 'TimeStamp': current_time})
             
         topic = f"library/{room}/{deviceType}/{device}"
         
