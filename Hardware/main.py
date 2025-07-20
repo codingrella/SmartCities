@@ -8,6 +8,7 @@ import math
 from SensorInterfaces import DigitalSensorInterface
 from SensorInterfaces import AnalogSensorInterface
 from Actuators.LCD import * 
+from setActuator import setter
 
 # from DatabaseConn import NumericDatabaseInterface, AbstractedDatabaseInterface
 
@@ -39,7 +40,9 @@ if __name__ == "__main__":
     # button = DigitalSensorInterface(digitalPorts['Button'])
     
     
-    pub = MQTTPublisher ()
+    pub = MQTTPublisher()
+    setActuators = setter()
+    setActuators.start()
     
     while True:
         time.sleep(1)
