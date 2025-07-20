@@ -38,32 +38,38 @@
                             </span>
                         </div>
                     </div>
+                    
+                    <!-- Remove the room selection dropdown -->
                     <div class="card-body">
                         <div class="room-selection">
-                            <label for="dashboardRooms">Select Room:</label>
-                            <select name="room" id="dashboardRooms" onchange="loadSeatsForDashboard()">
-                                <option value="firstRoomName">{{ firstRoomName }}</option>
-                            </select>
-                            <div class="seat-legend">
-                                <div class="legend-item">
-                                    <div class="seat-indicator free"></div>
-                                    <span>Available</span>
-                                </div>
-                                <div class="legend-item">
-                                    <div class="seat-indicator occupied"></div>
-                                    <span>Occupied</span>
-                                </div>
+                        <label for="dashboardRooms">Select Room:</label>
+                        <select name="room" id="dashboardRooms" onchange="loadSeatsForDashboard()">
+                            <option value="Room1">Study Room 1</option>
+                        </select>
+                        
+                        <!-- Keep only the legend and grid -->
+                        <div class="seat-legend">
+                            <div class="legend-item">
+                                <div class="seat-indicator free"></div>
+                                <span>Available</span>
                             </div>
-                            <div class="seating-grid" id="mainSeatingGrid">
-                                <!-- Seats will be loaded here dynamically -->
-                            </div>
-                            <div class="booking-section">
-                                <button type="button" class="btn btn-primary btn-lg" onclick="openBookingSystem()">
-                                    Book Here
-                                </button>
+                            <div class="legend-item">
+                                <div class="seat-indicator occupied"></div>
+                                <span>Occupied</span>
                             </div>
                         </div>
+                        
+                        <div class="seating-grid" id="mainSeatingGrid">
+                            <!-- Seats will be loaded here dynamically -->
+                        </div>
+                        
+                        <div class="booking-section">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="openBookingSystem()">
+                                Book Here
+                            </button>
+                        </div>
                     </div>
+                </div>
                 </div>
                 <div class="card dashboard-card-small">
                     <div class="card-header">
@@ -190,26 +196,8 @@
                         console.error('Error parsing MQTT message:', e);
                     }
                 });
-                // try{
-                //     const data = JSON.parse(message);
-                //     console.log('Received message:', data);
+            }
 
-                //     // Update sensor values in the dashboard
-                //     if (data.Device === 'Temperature_Sensor') {
-                //         document.getElementById('temperature').textContent = data.Value + '°C';
-                //     } if (data.Device === 'Humidity_Sensor') {
-                //         document.getElementById('humidity').textContent = data.Value + '%';
-                //     } if (data.Device === 'Sound_Sensor') {
-                //         document.getElementById('soundlevel').textContent = data.Value;
-                //     } if (data.Device === 'Light_Sensor') {
-                //         document.getElementById('lighting').value = data.Value;
-                //         updateLightLevel();
-                //     }
-                // } catch (e) {
-                //     console.error('Error parsing MQTT message:', e);
-                // }
-            // }
-        }
             // Call connectMQTT on page load
             connectMQTT();
         </script>
@@ -217,29 +205,10 @@
 </html>
 
 <script>
-    let seatingData = [];
-    let roomsData = [];
     let seatsData = [];
-    let currentRoom = 'SR1'; // Default room
-    
-    // Load data from hidden script tags
-    try {
-        //parse the array of rooms and seats from the hidden script tags
-        roomsData = JSON.parse(document.getElementById('dashboardRoomsData').textContent);
-        console.log(roomsData);
-        // get room name from the first room in the array
-        const firstRoomName = roomsData[0];
-        console.log(firstRoomName); // Outputs the name of the first room
-        seatsData = JSON.parse(document.getElementById('dashboardSeatsData').textContent);
-        console.log(seatsData);
-    } catch (e) {
-        console.error('Error loading room/seat data:', e);
-        roomsData = [];
-        seatsData = [];
-    }
+    const currentRoom = 'SR_1'; // Only one room
     
     function openBookingSystem() {
-        // Function to open the booking system pop up with time selection
         const bookingWindow = window.open(
             '/dashboard/booking',
             'Booking System',
@@ -252,179 +221,114 @@
         }
     }
 
-    function loadSeatsForDashboard() {
-        const roomSelect = document.getElementById('dashboardRooms');
-        console.log('Selected room:', roomSelect.value);
-        const selectedRoomId = roomSelect.value;
-        const seatsGrid = document.getElementById('mainSeatingGrid');
-        
-        // Clear previous seats
-        seatsGrid.innerHTML = '';
-        
-        if (!selectedRoomId) return;
-        
-        // Filter seats for selected room (if we have dynamic data)
-        let roomSeats = seatsData.filter(seat => {
-            const seatRoomId = seat[1] || seat.room_id;
-            return seatRoomId == selectedRoomId;
-        });
-        
-        // If no dynamic data, create sample seats
-        // if (roomSeats.length === 0) {
-        //     roomSeats = [];
-        //     for (let i = 1; i <= 20; i++) {
-        //         roomSeats.push({
-        //             id: i,
-        //             name: `Seat ${i}`,
-        //             occupied: Math.random() > 0.7, // 30% chance of being occupied
-        //             room: selectedRoomId
-        //         });
-        //     }
-        // }
-        
-        // Create seat buttons (view-only)
-        roomSeats.forEach((seat, index) => {
-            const seatId = seat.id || seat[0];
-            const seatName = seat.name || seat[2] || `Seat ${index + 1}`;
-            const isOccupied = seat.occupied || seat[3] || false;
-            
-            const seatButton = document.createElement('div');
-            seatButton.className = `seat ${isOccupied ? 'occupied' : 'free'}`;
-            seatButton.textContent = seatName;
-            seatButton.title = `${seatName} - ${isOccupied ? 'Occupied' : 'Available'}`;
-            
-            seatsGrid.appendChild(seatButton);
-        });
-        
-        // Update seat statistics
-        updateSeatStats(roomSeats);
-    }
-
-    // Load seating plan data
     function loadSeatingPlan() {
         fetch('/api/seating-plan')
             .then(response => response.json())
-            .then(data => {
-                seatsData = data.seats || [];
-                roomsData = data.rooms || [];
-                loadSeatsForDashboard();
+            .then(seats => {
+                console.log('Received seats:', seats);
+                seatsData = seats;
+                displaySeats();
             })
             .catch(error => {
                 console.error('Error loading seating plan:', error);
-                // Load sample seating plan
-                loadSeatsForDashboard();
             });
     }
 
-    function updateSeatStats(seats) {
-        const totalSeats = seats.length;
-        //get occupied seats by selecting all true values from seats
-        const occupiedSeats = seats.filter(seat => seat.occupied || seat[3]).length;
-        const freeSeats = totalSeats - occupiedSeats;
+    function displaySeats() {
+        const seatsGrid = document.getElementById('mainSeatingGrid');
+        seatsGrid.innerHTML = '';
         
-        document.getElementById('totalSeats').textContent = totalSeats;
-        document.getElementById('occupiedSeats').textContent = occupiedSeats;
-        document.getElementById('freeSeats').textContent = freeSeats;
+        // Create seats with 4 per row layout
+        seatsData.forEach((seat, index) => {
+            // Create new row every 4 seats
+            if (index % 4 === 0) {
+                const row = document.createElement('div');
+                row.className = 'seat-row';
+                seatsGrid.appendChild(row);
+            }
+            
+            // Create seat element
+            const seatDiv = document.createElement('div');
+            seatDiv.className = `seat ${seat.occupied ? 'occupied' : 'free'}`;
+            seatDiv.textContent = seat.name;
+            seatDiv.title = `${seat.name} - ${seat.occupied ? 'Occupied' : 'Available'}`;
+            
+            seatsGrid.lastElementChild.appendChild(seatDiv);
+        });
+        
+        // Update statistics
+        const occupied = seatsData.filter(s => s.occupied).length;
+        document.getElementById('totalSeats').textContent = seatsData.length;
+        document.getElementById('occupiedSeats').textContent = occupied;
+        document.getElementById('freeSeats').textContent = seatsData.length - occupied;
     }
 
-    // Load real-time sensor data
-    function loadSensorData() {
-        //load sensor data from message broker
-
-        // fetch('/api/data')
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         document.getElementById('humidity').textContent = data.humidity + '%';
-        //         document.getElementById('temperature').textContent = data.temperature + '°C';
-        //         document.getElementById('airQuality').textContent = data.light + ' lux';
-        //     })
-        //     .catch(error => {
-        //         console.error('Error loading sensor data:', error);
-        //         document.getElementById('humidity').textContent = 'N/A';
-        //         document.getElementById('temperature').textContent = 'N/A';
-        //         document.getElementById('airQuality').textContent = 'N/A';
-        //     });
+    // Simplified - no room selection needed
+    function loadSeatsForDashboard() {
+        displaySeats();
     }
 
     function updateLightLevel() {
-    const slider = document.getElementById('lightLevelSlider');
-    const icon = document.getElementById('lightIcon');
-    const text = document.getElementById('lightLevelText');
-    const value = parseInt(slider.value);
-    
-    // Update icon and text based on slider value
-    switch(value) {
-        case 0:
-            icon.textContent = '🌑';
-            text.textContent = 'Dark';
-            break;
-        case 1:
-            icon.textContent = '🌤️';
-            text.textContent = 'Sunny';
-            break;
-        case 2:
-            icon.textContent = '☀️';
-            text.textContent = 'Very Sunny';
-            break;
+        const slider = document.getElementById('lightLevelSlider');
+        const icon = document.getElementById('lightIcon');
+        const text = document.getElementById('lightLevelText');
+        const value = parseInt(slider.value);
+        
+        switch(value) {
+            case 0:
+                icon.textContent = '🌑';
+                text.textContent = 'Dark';
+                break;
+            case 1:
+                icon.textContent = '🌤️';
+                text.textContent = 'Sunny';
+                break;
+            case 2:
+                icon.textContent = '☀️';
+                text.textContent = 'Very Sunny';
+                break;
+        }
+        
+        console.log('Light level changed to:', text.textContent);
+        updateLightLevelOnServer(value);
     }
-    
-    console.log('Light level changed to:', text.textContent);
 
-    // Optional: Send to server
-    updateLightLevelOnServer(value);
-}
+    function updateLightLevelOnServer(level) {
+        fetch('/api/light-level', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ level: level })
+        })
+        .then(response => response.json())
+        .then(data => console.log('Light level updated:', data))
+        .catch(error => console.error('Error updating light level:', error));
+    }
 
-function updateLightLevelOnServer(level) {
-    fetch('/api/light-level', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ level: level })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Light level updated on server:', data);
-    })
-    .catch(error => {
-        console.error('Error updating light level:', error);
-    });
-}
+    function initializeLightLevel() {
+        const slider = document.getElementById('lightLevelSlider');
+        slider.value = 0;
+        updateLightLevel();
+    }
 
-function initializeLightLevel() {
-    const slider = document.getElementById('lightLevelSlider');
-    slider.value = 0; // Default to dark
-    updateLightLevel();
-}
+    function startCheckIn() {
+        const button = document.querySelector('.button button');
+        button.style.backgroundColor = '#28a745';
+        button.textContent = 'Checked In';
+        
+        button.onclick = function() {
+            button.style.backgroundColor = '#007bff';
+            button.textContent = 'Check In';
+        }
+        
+        console.log('Checked in at:', new Date().toLocaleTimeString());
+    }
 
     // Initialize dashboard
     window.addEventListener('load', function() {
         initializeLightLevel();
         loadSeatingPlan();
-        loadSensorData();
     });
     
     // Refresh data periodically
-    setInterval(loadSensorData, 30000); // Every 30 seconds
     setInterval(loadSeatingPlan, 60000); // Every minute
-
-    function startCheckIn() {
-        // Check In function
-        //change the button color and text
-        const button = document.querySelector('.button button');
-        button.style.backgroundColor = '#28a745'; // Green color
-        button.textContent = 'Checked In';
-    
-        //check out --> change the button back to original color and text
-        button.onclick = function() {
-            button.style.backgroundColor = '#007bff'; // Original color
-            button.textContent = 'Check In';
-        }
-
-        //time stamp for check-in
-        const timestamp = new Date().toLocaleTimeString();
-        console.log('Checked in at:', timestamp);
-
-        //send data to db and change start time to stamped time
-    }
 </script>

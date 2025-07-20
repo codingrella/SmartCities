@@ -36,10 +36,19 @@
                         </div>
                         <div class="form-group d-flex align-items-center mb-3">
                             <div class="toggle-switch d-flex align-items-center">
-                                <label for="lightSwitch" class="me-2 mb-0">Switch Light in Study Room:</label>
+                                <label for="lightSwitch" class="me-2 mb-0">Switch Light</label>
                                 <div class="switch-icon" id="lightSwitchIcon">💡</div>
                                 <label class="switch">
                                     <input type="checkbox" id="lightSwitch" name="lightSwitch" onclick="toggleLightControl()">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <p></p>
+                            <div class="toggle-switch d-flex align-items-center">
+                                <label for="acSwitch" class="me-2 mb-0">Switch AC</label>
+                                <div class="switch-icon" id="acSwitchIcon">❄️</div>
+                                <label class="switch">
+                                    <input type="checkbox" id="acSwitch" name="acSwitch" onclick="toggleACControl()">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -122,10 +131,7 @@
             <div class="room-selection">
                 <label for="rooms">Select Room:</label>
                 <select name="room" id="rooms" onchange="loadSeatsForRoom()">
-                    <option value="">-- Select Study Room --</option>
-                    {% for room in rooms %}
-                        <option value="{{ room.id }}">{{ room.name }}</option>
-                    {% endfor %}
+                    <option value="">Study Room 1</option>
                 </select>
             </div>
             <!-- booking information on selected seat -->
@@ -222,21 +228,8 @@
 
 <script>
     let selectedSeat = null;
-    let roomsData = [];
     let seatsData = [];
     let timeSlotsData = [];
-
-    // Load data from hidden script tags
-    try {
-        roomsData = JSON.parse(document.getElementById('roomsData').textContent);
-        seatsData = JSON.parse(document.getElementById('seatsData').textContent);
-        timeSlotsData = JSON.parse(document.getElementById('timeSlotsData').textContent);
-    } catch (e) {
-        console.error('Error loading room/seat data:', e);
-        roomsData = [];
-        seatsData = [];
-        timeSlotsData = [];
-    }
 
     function toggleLightControl() {
         const lightSwitch = document.getElementById('lightSwitch');
@@ -248,51 +241,41 @@
         mqttClient.publish('library/SR_1/Plugwise/Light', `${lightSwitch.checked ? 'on' : 'off'}`, { qos: 1, retain: true });
     }
 
+    function toggleACControl() {
+        const acSwitch = document.getElementById('acSwitch');
+        mqttClient.publish('library/SR_1/Plugwise/Motor', `${acSwitch.checked ? 'start' : 'stop'}`, { qos: 1, retain: true });
+    }
+
     function loadSeatsForRoom() {
-        const roomSelect = document.getElementById('rooms');
-        const selectedRoomId = roomSelect.value;
+        //const roomSelect = document.getElementById('rooms');
+        //const selectedRoomId = roomSelect.value;
         const seatsGrid = document.getElementById('seatsGrid');
         const bookButton = document.getElementById('bookButton');
         
         // Clear previous seats
         seatsGrid.innerHTML = '';
         selectedSeat = null;
-        bookButton.disabled = true;
+        bookButton.disabled = true;        
         
-        if (!selectedRoomId) return;
-        
-        // Filter seats for selected room
-        const roomSeats = seatsData.filter(seat => {
-            // Handle both tuple format (database result) and object format
-            const seatRoomId = seat[1] || seat.room_id; // Assuming room_id is at index 1
-            return seatRoomId == selectedRoomId;
-        });
-        
-        // Create seat buttons
-        roomSeats.forEach((seat, index) => {
-            const seatId = seat[0] || seat.id;
-            const seatName = seat[2] || seat.name || `Seat ${index + 1}`;
-            const isOccupied = seat[3] || seat.occupied || false;
-            
-            const seatButton = document.createElement('button');
-            seatButton.className = `seat ${isOccupied ? 'occupied' : 'free'}`;
-            seatButton.textContent = seatName;
-            seatButton.disabled = isOccupied;
-            seatButton.onclick = () => selectSeat(seatId, seatName, selectedRoomId);
-            
-            seatsGrid.appendChild(seatButton);
-        });
-        
-        // If no seats found, create default grid
-        if (roomSeats.length === 0) {
-            for (let i = 1; i <= 20; i++) {
-                const seatButton = document.createElement('button');
-                seatButton.className = 'seat free';
-                seatButton.textContent = `Seat ${i}`;
-                seatButton.onclick = () => selectSeat(i, `Seat ${i}`, selectedRoomId);
-                seatsGrid.appendChild(seatButton);
+        // Create seats with 4 per row layout
+        seatsData.forEach((seat, index) => {
+            // Create new row every 4 seats
+            if (index % 4 === 0) {
+                const row = document.createElement('div');
+                row.className = 'seat-row';
+                seatsGrid.appendChild(row);
             }
-        }
+            
+            // Create seat element
+            const seatDiv = document.createElement('div');
+            seatDiv.className = `seat ${seat.occupied ? 'occupied' : 'free'}`;
+            seatDiv.textContent = seat.name;
+            seatDiv.title = `${seat.name} - ${seat.occupied ? 'Occupied' : 'Available'}`;
+            
+            seatsGrid.lastElementChild.appendChild(seatDiv);
+        });
+
+        
     }
 
     function selectSeat(seatId, seatName, roomId) {
