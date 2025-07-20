@@ -87,12 +87,3 @@ class MQTTSubscriber:
         self.subscribe()
         self.client.loop_forever()
         
-   
-        
-   
-def on_message(client, userdata, msg):
-    print(msg.payload.decode())
-    
-sub = MQTTSubscriber()
-sub.client.on_message = on_message
-sub.run('SR_1', '+', '+')
