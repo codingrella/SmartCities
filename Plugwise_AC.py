@@ -10,20 +10,18 @@ circle = Circle("000D6F0004B1E1C4", stick)  # MAC address of Circle
 
 print("Current electricity consumption in W: %.2f" % (circle.get_power_usage(),))
 
-def plugwise_motor(payload):
-    try:
-        if payload == 'start':
-            circle.switch_on()
-        time.sleep(5)
-    except Exception as e:
-        print(f"Error in plugwise_motor: {e}")
+def plugwise_ventilator(payload):
+    if payload == 'ac_on':
+        circle.switch_on()
+    elif payload == 'ac_off':
+        circle.switch_off()
 
 
 class MQTTSubscriber:
     def __init__(self):
         self.broker = '192.168.188.40'
         self.port = 1883
-        self.topic = "library/SR_1/Plugwise/Motor"
+        self.topic = "library/SR_1/Actuator/AC"
         self.client_id = f'subscribe-{random.randint(0, 100)}'
         # self.username = 'emqx'
         # self.password = 'public'
@@ -41,7 +39,7 @@ class MQTTSubscriber:
     def subscribe(self):
         def on_message(client, userdata, msg):
             print(f"Received {msg.payload.decode()} from {msg.topic} topic")
-            plugwise_motor(msg.payload.decode())
+            plugwise_ventilator(msg.payload.decode())
     
         self.client.subscribe(self.topic)
         self.client.on_message = on_message

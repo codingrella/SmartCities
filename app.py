@@ -14,9 +14,8 @@ import hashlib
 import paho.mqtt.client as mqtt_client
 import paho.mqtt.publish as mqtt_publish
 
-
-mqtt_publish.single("library/SR_1/Plugwise/Light", payload="on", qos=1, hostname="192.168.188.40", port=1883)
-mqtt_publish.single("library/SR_1/Plugwise/Motor", payload="start", qos=1, hostname="192.168.188.40", port=1883)
+mqtt_publish.single("library/SR_1/Actuator/Motor", payload="up", qos=1, hostname="192.168.188.40", port=1883)
+mqtt_publish.single("library/SR_1/Actuator/AC", payload="ac_on", qos=1, hostname="192.168.188.40", port=1883)
 
 app = Flask(__name__, template_folder='template', static_folder='static')
 socketio = SocketIO(app)
