@@ -15,10 +15,10 @@ class getter(threading.Thread):
                               'Blinds_down': 5 }
         
         # AC and Light handled via Plugwise
-        self.actuatorValues = { 'Blinds': 0,
-                                'Light': 1,
-                                'AC': 1,
-                                'Heater': 0 }
+        self.actuatorValues = { 'Blinds_down': 0,
+                                'Blinds_up': 1,
+                                'Heater_off': 0,
+                                'Heater_on': 1}
         
         
         
@@ -28,13 +28,23 @@ class getter(threading.Thread):
         
         self.sub = threading.Thread(target=sub.run)
         self.sub.start()
-        print('Subscriper Active')
+        print('Subscriber Active')
         
             
         
     def on_message(self, client, userdata, msg):
-        if 'Blinds' in msg.payload.decode() or 'Heater' in msg.payload.decode():
+        if 'Heater' in msg.payload.decode():
             res = eval(msg.payload.decode())
-            self.actuatorValues[res['Device']] = res['Value']
+            if res['Value'] == 0:
+                self.actuatorValues['Heater_off'] = 1
+            elif res['Value'] == 1:
+                self.actuatorValues['Heater_on'] = 1
+        
+        elif 'Blinds' in msg.payload.decode():
+            res = eval(msg.payload.decode())
+            if res['Value'] == 0:
+                self.actuatorValues['Blinds_down'] = 1
+            elif res['Value'] == 1:
+                self.actuatorValues['Blinds_up'] = 1
         
             
