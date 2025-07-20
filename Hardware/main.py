@@ -8,7 +8,7 @@ import math
 from SensorInterfaces import DigitalSensorInterface
 from SensorInterfaces import AnalogSensorInterface
 from Actuators.LCD import * 
-from setActuator import setter
+from setActuator import getter
 
 # from DatabaseConn import NumericDatabaseInterface, AbstractedDatabaseInterface
 
@@ -17,19 +17,36 @@ from MQTTInterface import MQTTPublisher
 
 analogPorts = {
         'LightSensor': 1,
-        'SoundSensor': 2
-        }
+        'SoundSensor': 2 }
 
 digitalPorts = {
         'PIR': 2,
         'Button': 8,
-        'Temp+Humidity': 4
-        }
+        'Temp+Humidity': 4 }
+
+actuatorPins = { 'Heater': 6,
+                 'Blinds_up': 8,
+                 'Blinds_down': 5 }
 
 
-# pub = MQTTPublisher_Sensor('SR_1', 'test')
-# pub.run('HELLO')
-# pub.disconnect()
+
+def _setHeater(value):
+    grovepi.digitalWrite(actuatorPins['Heater'], value)
+    
+def _setBlinds(value):
+    if value == 1:
+        grovepi.digitalWrite(actuatorPins['Blinds_down'], 1)
+    elif value == 0:
+        grovepi.digitalWrite(actuatorPins['Blinds_up'], 1)
+        grovepi.digitalWrite(actuatorPins['Blinds_down'], 1)
+        
+    time.sleep(4)
+    grovepi.digitalWrite(actuatorPins['Blinds_up'], 0)
+    grovepi.digitalWrite(actuatorPins['Blinds_down'], 0)
+
+
+
+
 
 if __name__ == "__main__":
     # dbInterface_num = NumericDatabaseInterface()
@@ -41,9 +58,12 @@ if __name__ == "__main__":
     
     
     pub = MQTTPublisher()
-    setActuators = setter('SR_1')
-    setActuators.start()
-    setActuators.startSubscriber()
+    getActuatorValues = getter('SR_1')
+    getActuatorValues.start()
+    getActuatorValues.startSubscriber()
+    
+    for key, value in actuatorPins.items():
+        grovepi.pinMode(value, "INPUT")
     
     while True:
         time.sleep(1)
@@ -78,7 +98,8 @@ if __name__ == "__main__":
             # dbInterface_num.updateHumidity(humidity)
             # print("temp =  C humidity =%.02f%%"%(temp, humidity))
             
-            
+        _setHeater(getActuatorValues.actuatorValues['Heater'])
+        _setBlinds(getActuatorValues.actuatorValues['Blinds'])
         
         print('<3', flush=True)
         
