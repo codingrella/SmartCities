@@ -43,8 +43,9 @@
 )
 
 (:action turnOnAC
-    :parameters (?ac -airConditioning ?r -room)
+    :parameters (?ac -airConditioning ?h -heater ?r -room)
     :precondition (and (not (airConditioning_on ?ac ?r))
+                       (not (heater_on ?h ?r))
                        (or (temp_isHot ?r)
                        (hum_isBad ?r)))
     :effect (and (temp_isGood ?r)
@@ -60,8 +61,9 @@
 )
 
 (:action turnOnHeater
-    :parameters (?h -heater ?r -room)
+    :parameters (?h -heater ?airConditioning -air ?r -room)
     :precondition (and (not(heater_on ?h ?r))
+                       (not (airConditioning_on ?ac ?r))
                        (temp_isCold ?r))
     :effect (and (temp_isGood ?r)
                  (heater_on ?h ?r))
