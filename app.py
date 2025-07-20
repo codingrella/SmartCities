@@ -14,9 +14,6 @@ import hashlib
 import paho.mqtt.client as mqtt_client
 import paho.mqtt.publish as mqtt_publish
 
-mqtt_publish.single("library/SR_1/Actuator/Motor", payload="up", qos=1, hostname="192.168.188.40", port=1883)
-mqtt_publish.single("library/SR_1/Actuator/AC", payload="ac_on", qos=1, hostname="192.168.188.40", port=1883)
-
 app = Flask(__name__, template_folder='template', static_folder='static')
 socketio = SocketIO(app)
 
@@ -223,13 +220,14 @@ def open_browser(url):
 def book_seat():
     try:
         data = request.get_json()
-        seat_id = data.get('seatId')
-        room_id = data.get('roomId')
-        seat_name = data.get('seatName')
-        
-        if not seat_id or not room_id:
-            return jsonify({'success': False, 'message': 'Missing seat or room ID'})
-        
+        user_id = data.get('userId')
+        seat_id = data.get('bookedseat')
+        startTime = data.get('startTime')
+        endTime = data.get('endTime')
+
+        if not seat_id:
+            return jsonify({'success': False, 'message': 'Missing seat ID'})
+
         conn = get_connection_to_db()
         if not conn:
             return jsonify({'success': False, 'message': 'Database connection failed'})
@@ -237,31 +235,31 @@ def book_seat():
         try:
             cur = conn.cursor()
             # Check if seat is already occupied
-            cur.execute("SELECT * FROM public.seatoccupied WHERE roomid = %s AND seatid = %s", (room_id, seat_id))
-            existing_booking = cur.fetchone()
+            # cur.execute("SELECT * FROM public.seatoccupied WHERE roomid = %s AND seatid = %s", (room_id, seat_id))
+            # existing_booking = cur.fetchone()
             
-            if existing_booking and existing_booking[3]:  # Assuming occupied status is at index 3
-                return jsonify({'success': False, 'message': 'Seat is already occupied'})
+            # if existing_booking and existing_booking[3]:  # Assuming occupied status is at index 3
+            #     return jsonify({'success': False, 'message': 'Seat is already occupied'})
             
             # Update or insert seat booking
             today = datetime.datetime.now().strftime("%Y-%m-%d")
-            if existing_booking:
-                cur.execute("""
-                    UPDATE public.seatoccupied 
-                    SET status = 'occupied', date = %s 
-                    WHERE roomid = %s AND seatid = %s
-                """, (today, room_id, seat_id))
-            else:
-                cur.execute("""
-                    INSERT INTO public.seatoccupied (roomid, seatid, status, date) 
-                    VALUES (%s, %s, 'occupied', %s)
-                """, (room_id, seat_id, today))
-            
+            # if existing_booking:
+            cur.execute("""
+                UPDATE public.seats 
+                SET isoccupied = 'True',
+                WHERE roomid = %s AND seatid = %s
+            """, (today, startTime, endTime, seat_id))
+            # else:
+            cur.execute("""
+                INSERT INTO public.seatbookings (userid, bookedseat, starttime, endtime) 
+                VALUES (%s, %s, %s, %s)
+            """, (user_id, seat_id, startTime, endTime))
+
             conn.commit()
             conn.close()
-            
-            return jsonify({'success': True, 'message': f'Seat {seat_name} booked successfully'})
-            
+
+            return jsonify({'success': True, 'message': f'Seat {seat_id} booked successfully'})
+
         except Exception as e:
             if conn:
                 conn.close()

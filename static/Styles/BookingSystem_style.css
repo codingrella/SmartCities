@@ -17,9 +17,14 @@ h2 {
     text-align: center;
     margin-bottom: 30px;
 }
+.row {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 20px;
+}
 
 .booking-container {
-    margin: 0 50px;
     text-align:center;
     background-color: white;
     border-radius: 15px;
@@ -28,9 +33,15 @@ h2 {
     height: 100%;
 }
 
-.card {
+.card-small {
     background-color: transparent;
-    width: auto;
+    width: 350px;
+    height:auto;
+}
+
+.card-big {
+    background-color: transparent;
+    width: 500px;
     height:auto;
 }
 

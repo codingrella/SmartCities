@@ -9,106 +9,108 @@
     </head>
     <body>
         <div class="booking-container">
-            <div class="card">
+            <div class="row">
+                <div class="card-small">
 
-                <h2>Book Your Seat</h2>
-                <!-- Booking form with User ID and Password-->
-                 <div class="user-authentication">
-                    <div class="form-group">
-                        <label for="userId">User ID:</label>
-                        <input type="text" id="userId" name="userId" placeholder="Enter your User ID" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" placeholder="Enter your Password" required>
-                    </div>
-                 </div>
-    
-    
-                <!-- Time Selection Form -->
-                <div class="time-selection-section">
-                    <h3>Select Time Slot</h3>
-                    <div class="time-form">
+                    <h2>Book Your Seat</h2>
+                    <!-- Booking form with User ID and Password-->
+                        <div class="user-authentication">
                         <div class="form-group">
-                            <label for="bookingDate">Date:</label>
-                            <input type="date" id="bookingDate" name="bookingDate" required>
+                            <label for="userId">User ID:</label>
+                            <input type="text" id="userId" name="userId" placeholder="Enter your User ID" required>
                         </div>
-                        <!-- time slots in 5 minute intervals -->
-    
                         <div class="form-group">
-                            <label for="startTime">Start Time:</label>
-                            <select id="startTime" name="startTime" required>
-                                <option value=""></option>
-                                {% for slot in time_slots %}
-                                    <option value="{{ slot }}">{{ slot }}</option>
-                                {% endfor %}
-                            </select>
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" placeholder="Enter your Password" required>
+                        </div>
+                        </div>
+
+
+                    <!-- Time Selection Form -->
+                    <div class="time-selection-section">
+                        <h3>Select Time Slot</h3>
+                        <div class="time-form">
+                            <div class="form-group">
+                                <label for="bookingDate">Date:</label>
+                                <input type="date" id="bookingDate" name="bookingDate" required>
+                            </div>
+                            <!-- time slots in 5 minute intervals -->
+
+                            <div class="form-group">
+                                <label for="startTime">Start Time:</label>
+                                <select id="startTime" name="startTime" required>
+                                    <option value=""></option>
+                                    {% for slot in time_slots %}
+                                        <option value="{{ slot }}">{{ slot }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="endTime">End Time:</label>
+                                <select id="endTime" name="endTime" required>
+                                    <option value=""></option>
+                                    {% for slot in time_slots %}
+                                        <option value="{{ slot }}">{{ slot }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-big">
+                    <!-- Room Selection -->
+                    <div class="room-selection">
+                        <div class="room-selection">
+                                <label for="dashboardRooms">Select Room:</label>
+                                <select name="room" id="dashboardRooms" onchange="loadSeatsForDashboard()">
+                                    <option value="Room1">Study Room 1</option>
+                                </select>
+                    </div>
+
+                    <!-- Seating Plan -->
+                    <div class="seating-section">
+                        <h3>Select Your Seat</h3>
+                        <div class="seat-legend">
+                            <div class="seat-stats">
+                                <span class="stat-item">
+                                    <span class="seat-indicator free"></span>
+                                    Free: <span id="freeSeats">{% if free_seats is not none %}{{ free_seats }}{% else %}0{% endif %}</span>
+                                </span>
+                                <span class="stat-item">
+                                    <span class="seat-indicator occupied"></span>
+                                    Occupied: <span id="occupiedSeats">{% if occupied_seats is not none %}{{ occupied_seats }}{% else %}0{% endif %}</span>
+                                </span>
+                                <span class="stat-item">
+                                    Total: <span id="totalSeats">{% if total_seats is not none %}{{ total_seats }}{% else %}0{% endif %}</span>
+                                </span>
+                                <div class="stat-item">
+                                    <div class="seat-indicator selected"></div>
+                                    <!-- Show selected seat number -->
+                                        <!-- if selectedSeatNumber is set -->
+                                        {%if selectedSeatNumber %}
+                                    <span id="selectedSeatNumber">{{ selectedSeatNumber }}</span>
+                                        {%else %}
+                                    <span id="selectedSeatNumber">{% if selectedSeatNumber is not none %}{{ selectedSeatNumber }}{% else %}None{% endif %}</span>
+                                        {%endif %}
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="endTime">End Time:</label>
-                            <select id="endTime" name="endTime" required>
-                                <option value=""></option>
-                                {% for slot in time_slots %}
-                                    <option value="{{ slot }}">{{ slot }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <!-- Room Selection -->
-                <div class="room-selection">
-                    <div class="room-selection">
-                            <label for="dashboardRooms">Select Room:</label>
-                            <select name="room" id="dashboardRooms" onchange="loadSeatsForDashboard()">
-                                <option value="Room1">Study Room 1</option>
-                            </select>
-                </div>
-    
-                <!-- Seating Plan -->
-                <div class="seating-section">
-                    <h3>Select Your Seat</h3>
-                    <div class="seat-legend">
-                        <div class="seat-stats">
-                            <span class="stat-item">
-                                <span class="seat-indicator free"></span>
-                                Free: <span id="freeSeats">{% if free_seats is not none %}{{ free_seats }}{% else %}0{% endif %}</span>
-                            </span>
-                            <span class="stat-item">
-                                <span class="seat-indicator occupied"></span>
-                                Occupied: <span id="occupiedSeats">{% if occupied_seats is not none %}{{ occupied_seats }}{% else %}0{% endif %}</span>
-                            </span>
-                            <span class="stat-item">
-                                Total: <span id="totalSeats">{% if total_seats is not none %}{{ total_seats }}{% else %}0{% endif %}</span>
-                            </span>
-                            <div class="stat-item">
-                                <div class="seat-indicator selected"></div>
-                                <!-- Show selected seat number -->
-                                 <!-- if selectedSeatNumber is set -->
-                                 {%if selectedSeatNumber %}
-                                <span id="selectedSeatNumber">{{ selectedSeatNumber }}</span>
-                                 {%else %}
-                                <span id="selectedSeatNumber">{% if selectedSeatNumber is not none %}{{ selectedSeatNumber }}{% else %}None{% endif %}</span>
-                                    {%endif %}
+                        <div class="container" id="seatsContainer">
+                            <div class="seating-grid" id="seatsGrid">
+                                <!-- Seats will be loaded here dynamically -->
                             </div>
                         </div>
                     </div>
                     
-                    <div class="container" id="seatsContainer">
-                        <div class="seating-grid" id="seatsGrid">
-                            <!-- Seats will be loaded here dynamically -->
-                        </div>
+                    <!-- Booking Button -->
+                    <div class="booking-actions">
+                        <button id="bookButton" onclick="bookSelectedSeat()" disabled>Book Selected Seat</button>
+                        <button onclick="window.close()">Cancel</button>
                     </div>
-                </div>
-                
-                <!-- Booking Button -->
-                <div class="booking-actions">
-                    <button id="bookButton" onclick="bookSelectedSeat()" disabled>Book Selected Seat</button>
-                    <button onclick="window.close()">Cancel</button>
-                </div>
 
+                </div>
             </div>
         </div>
 
@@ -200,6 +202,40 @@
             alert('Bitte wählen Sie einen Platz aus.');
             return;
         }
+        else {
+        fetch('/api/book-seat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: document.getElementById('userId').value,
+                bookedseat: selectedSeat.id,
+                startTime: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value,
+                // roomId: selectedSeat.roomId,
+                // seatName: selectedSeat.name
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Platz ${selectedSeat.name} wurde erfolgreich gebucht!`);
+                // Mark seat as occupied
+                event.target.classList.remove('free', 'selected');
+                event.target.classList.add('occupied');
+                event.target.disabled = true;
+                selectedSeat = null;
+                document.getElementById('bookButton').disabled = true;
+            } else {
+                alert(`Fehler beim Buchen: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('Booking error:', error);
+            alert('Fehler beim Buchen des Platzes.');
+        });
+    }
         
         // Save selected occupied seat and Id
         localStorage.setItem('selectedSeat', JSON.stringify(selectedSeat));
@@ -219,37 +255,6 @@
         const encodedPassword = fernet.encrypt(password);
         console.log(`User ID: ${userId}, Encoded Password: ${encodedPassword}`);
     }
-
-
-        // fetch('/api/book-seat', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify({
-        //         seatId: selectedSeat.id,
-        //         roomId: selectedSeat.roomId,
-        //         seatName: selectedSeat.name
-        //     })
-        // })
-        // .then(response => response.json())
-        // .then(data => {
-        //     if (data.success) {
-        //         alert(`Platz ${selectedSeat.name} wurde erfolgreich gebucht!`);
-        //         // Mark seat as occupied
-        //         event.target.classList.remove('free', 'selected');
-        //         event.target.classList.add('occupied');
-        //         event.target.disabled = true;
-        //         selectedSeat = null;
-        //         document.getElementById('bookButton').disabled = true;
-        //     } else {
-        //         alert(`Fehler beim Buchen: ${data.message}`);
-        //     }
-        // })
-        // .catch(error => {
-        //     console.error('Booking error:', error);
-        //     alert('Fehler beim Buchen des Platzes.');
-        // });
     }
 
     // Add time validation

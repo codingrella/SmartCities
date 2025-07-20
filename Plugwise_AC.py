@@ -8,7 +8,7 @@ import plugwise.util
 stick = Stick("/dev/ttyUSB0")  # Adjust the path to your Stick device
 circle = Circle("000D6F0004B1E1C4", stick)  # MAC address of Circle
 
-print("Current electricity consumption in W: %.2f" % (circle.get_power_usage(),))
+#print("Current electricity consumption in W: %.2f" % (circle.get_power_usage(),))
 
 def plugwise_ventilator(payload):
     if payload == 'ac_on':
@@ -38,7 +38,7 @@ class MQTTSubscriber:
     
     def subscribe(self):
         def on_message(client, userdata, msg):
-            print(f"Received {msg.payload.decode()} from {msg.topic} topic")
+            #print(f"Received {msg.payload.decode()} from {msg.topic} topic")
             plugwise_ventilator(msg.payload.decode())
     
         self.client.subscribe(self.topic)

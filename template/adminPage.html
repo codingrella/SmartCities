@@ -39,7 +39,7 @@
                                 <label for="lightSwitch" class="me-2 mb-0">Switch Light</label>
                                 <div class="switch-icon" id="lightSwitchIcon">💡</div>
                                 <label class="switch">
-                                    <input type="checkbox" id="lightSwitch" name="lightSwitch" onclick="toggleLightControl()">
+                                    <input type="checkbox" id="lightSwitch" name="lightSwitch" onloadstart="setLightSwitch()" onclick="toggleLightControl()">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -48,7 +48,7 @@
                                 <label for="acSwitch" class="me-2 mb-0">Switch AC</label>
                                 <div class="switch-icon" id="acSwitchIcon">❄️</div>
                                 <label class="switch">
-                                    <input type="checkbox" id="acSwitch" name="acSwitch" onclick="toggleACControl()">
+                                    <input type="checkbox" id="acSwitch" name="acSwitch" onloadstart="setACSwitch()" onclick="toggleACControl()">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -231,6 +231,38 @@
     let seatsData = [];
     let timeSlotsData = [];
 
+    function setLightSwitch() {
+        const lightSwitch = document.getElementById('lightSwitch');
+        mqttClient.subscribe('library/SR_1/Actuator/Light', function (err) {
+            if (!err) {
+                mqttClient.on('message', function (message) {
+                    const payload = message.toString();
+                    if (payload == 'light_on') {
+                        lightSwitch.checked = true;
+                    } else if (payload == 'light_off') {
+                        lightSwitch.checked = false;
+                    }
+                });
+            }
+        });
+    }
+
+    function setACSwitch() {
+        const acSwitch = document.getElementById('acSwitch');
+        mqttClient.subscribe('library/SR_1/Actuator/AC', function (err) {
+            if (!err) {
+                mqttClient.on('message', function (message) {
+                    const payload = message.toString();
+                    if (payload == 'ac_on') {
+                        acSwitch.checked = true;
+                    } else if (payload == 'ac_off') {
+                        acSwitch.checked = false;
+                    }
+                });
+            }
+        });
+    }
+
     function toggleLightControl() {
         const lightSwitch = document.getElementById('lightSwitch');
         const lightSwitchIcon = document.getElementById('lightSwitchIcon');
@@ -238,12 +270,12 @@
             lightSwitchIcon.textContent = '💡'; // Light on icon
         else
             lightSwitchIcon.textContent = '🌑'; // Light off icon
-        mqttClient.publish('library/SR_1/Plugwise/Light', `${lightSwitch.checked ? 'on' : 'off'}`, { qos: 1, retain: true });
+        mqttClient.publish('library/SR_1/Actuator/Light', `${lightSwitch.checked ? 'light_on' : 'light_off'}`, { qos: 1, retain: true });
     }
 
     function toggleACControl() {
         const acSwitch = document.getElementById('acSwitch');
-        mqttClient.publish('library/SR_1/Plugwise/Motor', `${acSwitch.checked ? 'start' : 'stop'}`, { qos: 1, retain: true });
+        mqttClient.publish('library/SR_1/Actuator/AC', `${acSwitch.checked ? 'ac_on' : 'ac_off'}`, { qos: 1, retain: true });
     }
 
     function loadSeatsForRoom() {
