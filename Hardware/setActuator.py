@@ -37,7 +37,12 @@ class setter(threading.Thread):
             grovepi.pinMode(value, "INPUT")
             
     def _setAC(self, value):
-        grovepi.digitalWrite(self.actuatorPins['AC'], value)
+        if value == 1:
+            value = 'ac_on'
+        elif value == 0:
+            value = 'ac_off'
+            
+        self.pub.run('SR_1', 'Actuator', 'AC', value)
         
     def _setHeater(self, value):
         grovepi.digitalWrite(self.actuatorPins['Heater'], value)
@@ -55,14 +60,15 @@ class setter(threading.Thread):
         
     def _setLights(self, value):
         if value == 1:
-            value = 'on'
+            value = 'light_on'
         elif value == 0:
-            value = 'off'
+            value = 'light_off'
             
         self.pub.run('SR_1', 'Actuator', 'Light', value)
         
     def on_message(self, client, userdata, msg):
-        res = eval(msg.payload.decode())
-        self.actuatorToFunc[res['Device']](res['Value'])
+        if msg.payload.decode() != 'light_on' and msg.payload.decode() != 'light_off' and msg.payload.decode() != 'ac_on' and msg.payload.decode() != 'ac_off' and msg.payload.decode() != 'up' and msg.payload.decode() != 'down':
+            res = eval(msg.payload.decode())
+            self.actuatorToFunc[res['Device']](res['Value'])
         
             
