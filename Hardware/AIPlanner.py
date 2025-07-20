@@ -32,7 +32,7 @@ class AIPlannerInterface:
                               'Sound_Sensor': 0,
                               'Temperature_Sensor': 0 }
         self.actuatorValues = { 'Blinds': 0,
-                                'Lights': 1,
+                                'Light': 1,
                                 'AC': 1,
                                 'Heater': 0 }
         self.thresholdValues = { 'inside_isLight': 600,
@@ -67,23 +67,40 @@ class AIPlannerInterface:
         self.sub = threading.Thread(target=sub.run)
         self.sub.start()
         
+    
+    def setInitialState(self):
+        self._setAC(self.actuatorValues['AC'])
+        self._setHeater(self.actuatorValues['Heater'])
+        self._setLight(self.actuatorValues['Light'])
+        self._setBlinds(self.actuatorValues['Blinds'])
+        
         
     
     def on_message(self, client, userdata, msg):
         # On manual intervention from UI
-        if 'on' == msg.payload.decode(): 
-            self.actions['TURNONLIGHT'](1)
+        if 'light_on' == msg.payload.decode(): 
+            self.actuatorValues['Lights'] = 1
+            # self.actions['TURNONLIGHT'](1)
             return
-        elif 'off' == msg.payload.decode():
-            self.actions['TURNOFFLIGHT'](0)
+        elif 'light_off' == msg.payload.decode():
+            self.actuatorValues['Lights'] = 0
+            # self.actions['TURNOFFLIGHT'](0)
             return
-        # elif 'up' == msg.payload.decode(): 
-        elif 'start' == msg.payload.decode(): 
-            self.actions['OPENBLINDS'](1)
+        elif 'ac_on' == msg.payload.decode(): 
+            self.actuatorValues['AC'] = 1
+            # self.actions['TURNONLIGHT'](1)
             return
-        # elif 'down' == msg.payload.decode():
-        elif 'stop' == msg.payload.decode():
-            self.actions['CLOSEBLINDS'](0)
+        elif 'ac_off' == msg.payload.decode():
+            self.actuatorValues['AC'] = 0
+            # self.actions['TURNOFFLIGHT'](0)
+            return
+        elif 'up' == msg.payload.decode(): 
+        # elif 'start' == msg.payload.decode(): 
+            self.actions['OPENBLINDS'](0)
+            return
+        elif 'down' == msg.payload.decode():
+        # elif 'stop' == msg.payload.decode():
+            self.actions['CLOSEBLINDS'](1)
             return
        
         # On hardware updates
@@ -99,9 +116,6 @@ class AIPlannerInterface:
                 # self.time_toggleOneDetected = res['TimeStamp']
                 self.motionToggleZero = False
                 if int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
-                    print(time1)
-                    print(time2)
-                    print(difference)
                     self.motionToggleOne = True
                 print('Motion toggle to 1')
             elif self.sensorValues[res['Device']] == 1 and res['Value'] == 0:
@@ -154,7 +168,7 @@ class AIPlannerInterface:
     
     def _setLight(self, value):
         self.actuatorValues['Lights'] = value
-        self.pub.run(f'{self.room}', 'Actuator', 'Lights', value)
+        self.pub.run(f'{self.room}', 'Actuator', 'Light', value)
     
     def _setBlinds(self, value):
         self.actuatorValues['Blinds'] = value
@@ -281,6 +295,7 @@ class AIPlannerInterface:
         
 if __name__ == "__main__":
     planner = AIPlannerInterface('SR_1')
+    planner.setInitialState()
     
     while True:
         time1 = datetime.strptime(planner.time_toggleZeroDetected, '%H:%M:%S')
@@ -289,6 +304,7 @@ if __name__ == "__main__":
         
         # if OPENING_HOUR.time() >= datetime.now().time() or datetime.now().time() >= CLOSING_HOUR.time():
         #     print('CLOSED')
+        #     planner.setInitialState()
         
         if planner.motionToggleOne or (planner.motionToggleZero and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED): 
             print('REPLANNING')
