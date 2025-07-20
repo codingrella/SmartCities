@@ -10,6 +10,7 @@ from MQTTInterface import MQTTSubscriber, MQTTPublisher
 
 class setter(threading.Thread):
     def __init__(self, room):
+        super(setter, self).__init__()
         self.actuatorToFunc = { 'AC': self._setAC,
                                 'Heater': self._setHeater,
                                 'Blinds': self._setBlinds,
