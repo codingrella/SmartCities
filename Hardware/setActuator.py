@@ -38,9 +38,9 @@ class setter(threading.Thread):
             
     def _setAC(self, value):
         if value == 1:
-            value = 'on'
+            value = 'ac_on'
         elif value == 0:
-            value = 'off'
+            value = 'ac_off'
             
         self.pub.run('SR_1', 'Actuator', 'AC', value)
         
@@ -60,9 +60,9 @@ class setter(threading.Thread):
         
     def _setLights(self, value):
         if value == 1:
-            value = 'on'
+            value = 'light_on'
         elif value == 0:
-            value = 'off'
+            value = 'light_off'
             
         self.pub.run('SR_1', 'Actuator', 'Light', value)
         
