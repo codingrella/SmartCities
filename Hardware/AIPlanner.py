@@ -79,11 +79,11 @@ class AIPlannerInterface:
     def on_message(self, client, userdata, msg):
         # On manual intervention from UI
         if 'light_on' == msg.payload.decode(): 
-            self.actuatorValues['Lights'] = 1
+            self.actuatorValues['Light'] = 1
             # self.actions['TURNONLIGHT'](1)
             return
         elif 'light_off' == msg.payload.decode():
-            self.actuatorValues['Lights'] = 0
+            self.actuatorValues['Light'] = 0
             # self.actions['TURNOFFLIGHT'](0)
             return
         elif 'ac_on' == msg.payload.decode(): 
@@ -181,7 +181,7 @@ class AIPlannerInterface:
         elif value == 'light_off':
             value = 0
             
-        self.actuatorValues['Lights'] = value
+        self.actuatorValues['Light'] = value
         
         if value == 1:
             value = 'light_on'
@@ -238,9 +238,9 @@ class AIPlannerInterface:
         inits = []
         if int(self.actuatorValues['Blinds']) == 1:
             inits.append(f'(blinds_down b{roomNr} {self.room})')
-        if int(self.actuatorValues['Lights']) == 1:
+        if self.actuatorValues['Light'] == 'light_on' or int(self.actuatorValues['Light']) == 1:
            inits.append(f'(lighting_on l{roomNr} {self.room})')
-        if int(self.actuatorValues['AC']) == 1:
+        if self.actuatorValues['AC'] == 'ac_on' or int(self.actuatorValues['AC']) == 1:
             inits.append(f'(airConditioning_on ac{roomNr} {self.room})')
         if int(self.actuatorValues['Heater']) == 1:
             inits.append(f'(heater_on h{roomNr} {self.room})')
