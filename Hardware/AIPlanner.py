@@ -238,9 +238,9 @@ class AIPlannerInterface:
         inits = []
         if int(self.actuatorValues['Blinds']) == 1:
             inits.append(f'(blinds_down b{roomNr} {self.room})')
-        if self.actuatorValues['Light'] == 'light_on' or int(self.actuatorValues['Light']) == 1:
+        if not self.actuatorValues['Light'] == 'light_off' and (self.actuatorValues['Light'] == 'light_on' or int(self.actuatorValues['Light']) == 1):
            inits.append(f'(lighting_on l{roomNr} {self.room})')
-        if self.actuatorValues['AC'] == 'ac_on' or int(self.actuatorValues['AC']) == 1:
+        if not self.actuatorValues['AC'] == 'ac_off' and (self.actuatorValues['AC'] == 'ac_on' or int(self.actuatorValues['AC']) == 1):
             inits.append(f'(airConditioning_on ac{roomNr} {self.room})')
         if int(self.actuatorValues['Heater']) == 1:
             inits.append(f'(heater_on h{roomNr} {self.room})')
