@@ -67,5 +67,8 @@ class setter(threading.Thread):
         self.pub.run('SR_1', 'Actuator', 'Light', value)
         
     def on_message(self, client, userdata, msg):
-        res = eval(msg.payload.decode())
-        self.actuatorToFunc[res['Device']](res['Value'])
+        if msg != 'light_on' and msg != 'light_off' and msg != 'ac_on' and msg != 'ac_off' and msg != 'up' and msg != 'down':
+            res = eval(msg.payload.decode())
+            self.actuatorToFunc[res['Device']](res['Value'])
+        
+            
