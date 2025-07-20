@@ -10,6 +10,7 @@ from MQTTInterface import MQTTSubscriber
 class getter(threading.Thread):
     def __init__(self, room):
         super(getter, self).__init__()
+        self.room  = room
         self.actuatorPins = { 'Heater': 6,
                               'Blinds_up': 8,
                               'Blinds_down': 5 }
