@@ -159,7 +159,16 @@ class AIPlannerInterface:
             
     
     def _setAC(self, value):
+        if value == 'ac_on':
+            value = 1
+        elif value == 'ac_off':
+            value = 0
         self.actuatorValues['AC'] = value
+        
+        if value == 1:
+            value = 'ac_on'
+        elif value == 0:
+            value = 'ac_off'
         self.pub.run(f'{self.room}', 'Actuator', 'AC', value)
         
     def _setHeater(self, value):
@@ -167,7 +176,17 @@ class AIPlannerInterface:
         self.pub.run(f'{self.room}', 'Actuator', 'Heater', value)
     
     def _setLight(self, value):
+        if value == 'light_on':
+            value = 1
+        elif value == 'light_off':
+            value = 0
+            
         self.actuatorValues['Lights'] = value
+        
+        if value == 1:
+            value = 'light_on'
+        elif value == 0:
+            value = 'light_off'
         self.pub.run(f'{self.room}', 'Actuator', 'Light', value)
     
     def _setBlinds(self, value):
