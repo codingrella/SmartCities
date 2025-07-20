@@ -53,7 +53,7 @@ class AIPlannerInterface:
         
         self.room = room
         
-        self.thresholdChanged = True
+        self.replan = True
         self.noReplannedSinceMaxRange = False
         self.time_toggleZeroDetected = datetime.now().strftime("%H:%M:%S")
         # self.time_toggleOneDetected = datetime.now().strftime("%H:%M:%S")
@@ -100,10 +100,6 @@ class AIPlannerInterface:
         # On hardware updates
         res = eval(msg.payload.decode())
         
-        time1 = datetime.strptime(self.time_toggleZeroDetected, '%H:%M:%S')
-        time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
-        difference = time2 - time1
-        
         if res['Device'] == 'Motion_Sensor':
             if res['Value'] == 1:
                 self.sensorValues[res['Device']] = 1
@@ -115,16 +111,21 @@ class AIPlannerInterface:
             elif res['Value'] == 0:
                 self.sensorValues[res['Device']] = 0
         
+        if 'Outside_Sensor' == res['Device']:
+            if res['Value'] == 2 or res['Value'] == 0:
+                self.replan = True
+                
+                
         if 'Sensor' in res['Device']:
             self.sensorValues[res['Device']] = res['Value']
         elif 'Threshold_Low' in res['Device'] and 'Temp' in res['Device']:
             self.thresholdValues['temp_lower'] = float(res['Value'])
             print('NEW THRESHOLD, TEMPERATURE LOW:   ' + str(res['Value']))
-            self.thresholdChanged = True
+            self.replan = True
         elif 'Threshold_High' in res['Device'] and 'Temp' in res['Device']:
             self.thresholdValues['temp_upper'] = float(res['Value'])
             print('NEW THRESHOLD, TEMPERATURE UPPER:   ' + str(res['Value']))
-            self.thresholdChanged = True
+            self.replan = True
         elif 'Humidity_Threshold' != res['Device'] and 'Light' != res['Device']:
             self.actuatorValues[res['Device']] = res['Value']
     
@@ -340,20 +341,9 @@ if __name__ == "__main__":
             print(planSteps)
             planner.executePlan(planSteps)
             
-        elif planner.thresholdChanged:
+        elif planner.replan:
             print('REPLANNING')
-            planner.thresholdChanged = False
-            planner.startPlanning()
-            time.sleep(5)
-            try: plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
-            except: pass
-            time.sleep(5)
-            planSteps = planner.getPlanSteps(plannerResponse)
-            print(planSteps)
-            planner.executePlan(planSteps)
-            
-        elif planner.sensorValues['Outside_Sensor'] == 2:
-            print('REPLANNING')
+            planner.replan = False
             planner.startPlanning()
             time.sleep(5)
             try: plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
