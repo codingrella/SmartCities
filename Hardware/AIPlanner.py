@@ -163,16 +163,21 @@ class AIPlannerInterface:
             value = 1
         elif value == 'ac_off':
             value = 0
+            
+        print('Writing AC: ' + value)
         self.actuatorValues['AC'] = value
         
         if value == 1:
             value = 'ac_on'
         elif value == 0:
             value = 'ac_off'
+            
+        print('Publishing AC: ' + value)
         self.pub.run(f'{self.room}', 'Actuator', 'AC', value)
         
     def _setHeater(self, value):
         self.actuatorValues['Heater'] = value
+        print('Publishing Heater: ' + value)
         self.pub.run(f'{self.room}', 'Actuator', 'Heater', value)
     
     def _setLight(self, value):
@@ -181,12 +186,14 @@ class AIPlannerInterface:
         elif value == 'light_off':
             value = 0
             
+        print('Writing Light: ' + value)
         self.actuatorValues['Light'] = value
         
         if value == 1:
             value = 'light_on'
         elif value == 0:
             value = 'light_off'
+        print('Publishing Light: ' + value)
         self.pub.run(f'{self.room}', 'Actuator', 'Light', value)
     
     def _setBlinds(self, value):
@@ -307,8 +314,10 @@ class AIPlannerInterface:
             elements = step.split(' ')
             
             if 'ON' in elements[0] or 'OPEN' in elements[0]:
+                print(elements[0])
                 self.actions[elements[0]](1)
             elif 'OFF' in elements[0] or 'CLOSE' in elements[0]:
+                print(elements[0])
                 self.actions[elements[0]](0)
                  
         
@@ -327,8 +336,6 @@ if __name__ == "__main__":
         
         if planner.motionToggleOne or (planner.motionToggleZero and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED): 
             print('REPLANNING')
-            print(planner.motionToggleOne)
-            print(planner.motionToggleZero)
             planner.startPlanning()
             time.sleep(5)
             planner.motionToggleOne = False
