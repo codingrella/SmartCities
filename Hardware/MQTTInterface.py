@@ -37,12 +37,15 @@ class MQTTPublisher:
         
         
     def publish(self, room, deviceType, device, value):
-        t = time.localtime()
-        current_time = time.strftime("%H:%M:%S", t)
-        
+        if deviceType == 'Plugwise':
+            msg = value
+        else:
+            t = time.localtime()
+            current_time = time.strftime("%H:%M:%S", t)
+            msg = str({f'Device': device, 'Value': value, 'TimeStamp': current_time})
+            
         topic = f"library/{room}/{deviceType}/{device}"
-
-        msg = str({f'Device': device, 'Value': value, 'TimeStamp': current_time})
+        
         result = self.client.publish(topic, msg)
     
     
@@ -90,9 +93,9 @@ class MQTTSubscriber:
    
         
    
-# def on_message(client, userdata, msg):
-#     print(msg.payload.decode())
+def on_message(client, userdata, msg):
+    print(msg.payload.decode())
     
-# sub = MQTTSubscriber()
-# sub.client.on_message = on_message
-# sub.run('SR_1', '+', '+')
+sub = MQTTSubscriber()
+sub.client.on_message = on_message
+sub.run('SR_1', '+', '+')
