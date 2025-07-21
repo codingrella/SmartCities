@@ -8,14 +8,11 @@ import psycopg2
 import datetime
 import threading
 import time
-import cryptography.fernet
-import rsa
-import hashlib
-import paho.mqtt.client as mqtt_client
-import paho.mqtt.publish as mqtt_publish
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, template_folder='template', static_folder='static')
 socketio = SocketIO(app)
+
 
 def get_connection_to_db():
     try:
@@ -23,7 +20,7 @@ def get_connection_to_db():
         conn = psycopg2.connect(
             database="SmartCities25",
             user="postgres",
-            host="192.168.188.33",
+            host="192.168.153.247",
             password="Tn#2SKSS25",
             port=5432,
             connect_timeout=10  # 10 second timeout
@@ -36,40 +33,37 @@ def get_connection_to_db():
     except Exception as e:
         print(f"Unexpected database error: {e}")
         return None
+    
+@app.route('/user')
+def user_page():
+    return render_template('userPage.html')
 
-# class MQTTSubscriber:
-#     def _init_(self):
-#         self.broker = '192.168.63.237'
-#         self.port = 1883
-#         self.topic = f"library/SR_1/Sensor/#"
-#         self.client_id = f'subscribe-{random.randint(0, 100)}'
-#         # self.username = 'emqx'
-#         # self.password = 'public'
-        
-#         self.client = self.connect_mqtt()
-        
-#     def connect_mqtt(self):
-    
-#         client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, self.client_id)
-#         # client.username_pw_set(self.username, self.password)
-#         # client.on_connect = on_connect
-#         client.connect(self.broker, self.port)
-#         return client
-    
-#     def subscribe(self):
-#         def on_message(client, userdata, msg):
-#             print(f"Received {msg.payload.decode()} from {msg.topic} topic")
-    
-#         self.client.subscribe(self.topic)
-#         self.client.on_message = on_message
-    
-    
-#     def run(self):
-#         self.subscribe()
-#         self.client.loop_forever()
-        
-# sub = MQTTSubscriber()
-# sub.run()
+@app.route('/validate_user', methods=['POST'])
+def validate_user():
+    data = request.get_json()
+    userId = data.get('userId')
+    password = data.get('password')
+
+    conn = get_connection_to_db()
+    if not conn:
+        return jsonify({"valid": False, "error": "Database connection failed"}), 500
+
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM public.users WHERE userid = %s", (userId,))
+        user = cur.fetchone()
+
+        if user and check_password_hash(user[1], password):  # Assuming password is in the 2nd column
+            #print(f"User {userId} validated successfully.")
+            return jsonify({"valid": True}), 200
+        else:
+            return jsonify({"valid": False}), 401
+    except Exception as e:
+        print(f"Error validating user: {e}")
+        return jsonify({"valid": False, "error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 @app.route('/')
 def home():
@@ -81,54 +75,7 @@ def serve_css(filename):
 
 @app.route('/dashboard')
 def dashboard():
-    conn = get_connection_to_db()
-    # if not conn:
-    #     # Fallback: Return dashboard with sample data when database is unavailable
-    #     print("Database unavailable, using sample data")
-    #     return render_template('dashboard.html', 
-    #                            rooms=[], 
-    #                            seat_occupied=[], 
-    #                         #    aircon=[], 
-    #                         #    blinds=[], 
-    #                         #    door=[], 
-    #                            humidity=[], 
-    #                         #    lamps=[], 
-    #                         #    sunlight=[], 
-    #                            temperature=[], 
-    #                            volume_level=[],
-    #                            lighting=[],
-    #                            db_error=True)
-
-    try:
-        cur = conn.cursor()
-        cur.execute("select * from public.rooms")
-        rooms = cur.fetchall()
-        cur.execute("select * from public.seats")
-        seats = cur.fetchall()
-
-        conn.close()
-
-        return render_template('dashboard.html', 
-                               rooms=rooms, 
-                               seats=seats,
-                               db_error=False)
-    except Exception as e:
-        if conn:
-            conn.close()
-        print(f"Database error: {e}")
-        return render_template('dashboard.html', 
-                               rooms=[], 
-                               seat_occupied=[], 
-                               aircon=[], 
-                               blinds=[], 
-                               door=[], 
-                               humidity=[], 
-                               lamps=[], 
-                               sunlight=[], 
-                               temperature=[], 
-                               volume_level=[],
-                               db_error=True)
-
+    return render_template('dashboard.html')
 
 @app.route('/dashboard/booking')
 def seat_booking():
@@ -198,30 +145,17 @@ def open_browser(url):
     time.sleep(1.5)  # Wait for Flask server to start
     webbrowser.open(url)
 
-# @app.route('/api/test-db')
-# def test_db():
-#     """Test database connectivity"""
-#     conn = get_connection_to_db()
-#     if conn:
-#         try:
-#             cur = conn.cursor()
-#             cur.execute("SELECT 1")
-#             result = cur.fetchone()
-#             conn.close()
-#             return jsonify({"status": "success", "message": "Database connection successful", "result": result})
-#         except Exception as e:
-#             if conn:
-#                 conn.close()
-#             return jsonify({"status": "error", "message": f"Database query failed: {e}"})
-#     else:
-#         return jsonify({"status": "error", "message": "Could not connect to database"})
-
 @app.route('/api/book-seat', methods=['POST'])
 def book_seat():
     try:
         data = request.get_json()
+        room_id = "SR_1"
         user_id = data.get('userId')
-        seat_id = data.get('bookedseat')
+        # seat_id to string to "Seat_1_01"
+        # bookedseat = data.get('bookedseat').split()[-1]  # Get the last part of the string
+        bookedseat = f"Seat_1_{str(data.get('bookedseat').split()[-1])}"
+        print(f"Booked seat: {bookedseat}")
+        seat_id = str(bookedseat)
         startTime = data.get('startTime')
         endTime = data.get('endTime')
 
@@ -234,26 +168,25 @@ def book_seat():
         
         try:
             cur = conn.cursor()
-            # Check if seat is already occupied
-            # cur.execute("SELECT * FROM public.seatoccupied WHERE roomid = %s AND seatid = %s", (room_id, seat_id))
-            # existing_booking = cur.fetchone()
+
+            # First, ensure we have a valid user_id
+            if user_id and user_id != 'anonymous':
+                # Check if user exists
+                cur.execute("SELECT userid FROM public.users WHERE userid = %s", (user_id,))
+                if not cur.fetchone():
+                    # User doesn't exist, create a temporary one or use anonymous
+                    user_id = 'anonymous'
             
-            # if existing_booking and existing_booking[3]:  # Assuming occupied status is at index 3
-            #     return jsonify({'success': False, 'message': 'Seat is already occupied'})
-            
-            # Update or insert seat booking
-            today = datetime.datetime.now().strftime("%Y-%m-%d")
-            # if existing_booking:
             cur.execute("""
                 UPDATE public.seats 
-                SET isoccupied = 'True',
+                SET isoccupied = TRUE
                 WHERE roomid = %s AND seatid = %s
-            """, (today, startTime, endTime, seat_id))
+            """, (room_id, seat_id))
             # else:
             cur.execute("""
                 INSERT INTO public.seatbookings (userid, bookedseat, starttime, endtime) 
                 VALUES (%s, %s, %s, %s)
-            """, (user_id, seat_id, startTime, endTime))
+            """, (user_id, bookedseat, startTime, endTime))
 
             conn.commit()
             conn.close()
@@ -317,9 +250,10 @@ def seating_plan():
     try:
         cur = conn.cursor()
         # Get seat occupancy data
-        cur.execute("SELECT roomid, seatid, isoccupied FROM public.seats WHERE roomid = 'SR_1'")
+        cur.execute("""SELECT roomid, seatid, isoccupied FROM public.seats WHERE roomid = 'SR_1' 
+                    ORDER BY seatid""")
         seat_data = cur.fetchall()
-        #print(seat_data)
+        print(seat_data)
 
         # Create seating plan
         seating_plan = []
@@ -328,15 +262,15 @@ def seating_plan():
             # get occupancy status for each seat from the database
             occupied = seat_data[i-1][2]
             seating_plan.append({
-                'id': i,
-                'name': f'Seat {i}',
+                #'id': i,
+                'name': f'Seat {str(i).zfill(2)}',
                 'occupied': occupied,
                 'room': 'SR1'
             })
-        #print(seating_plan)
         conn.close()
         #print(seating_plan)
         return seating_plan
+        #print(seating_plan)
         
     except Exception as e:
         if conn:
@@ -348,6 +282,53 @@ def seating_plan():
         #     for i in range(1, 21)
         # ]
         # return jsonify(sample_data)
+
+@app.route('/api/get-booking-info', methods=['GET'], )
+def get_booking_info():
+    try:
+        data = request.get_json()
+        seat_id = f"Seat_1_{str(data.get('seat').split()[-1])}"
+        # room_id = request.args.get('roomId')
+
+        # Fetch booking info from the database
+        conn = get_connection_to_db()
+        if not conn:
+            return jsonify({'success': False, 'message': 'Database connection error'}), 500
+
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM public.seatbookings WHERE bookedseat = %s", (seat_id,))
+        booking_info = cur.fetchall()
+        print(f"Booking info for seat {seat_id}: {booking_info}")
+        conn.close()
+
+        if booking_info:
+            return jsonify({'success': True, 'data': booking_info})
+        else:
+            return jsonify({'success': False, 'message': 'No booking found'}), 404
+
+    except Exception as e:
+        print(f"Error fetching booking info: {e}")
+        return jsonify({'success': False, 'message': 'Server error'}), 500
+    
+@app.route('/api/delete-booking', methods=['POST'],)
+def delete_booking():
+    try:
+        data = request.get_json()
+        seat_id = f"Seat_1_{str(data.get('bookedseat').split()[-1])}"
+        conn = get_connection_to_db()
+        if not conn:
+            return jsonify({'success': False, 'message': 'Database connection error'}), 500
+        cur = conn.cursor()
+        # Delete booking from the database  
+        cur.execute("DELETE FROM public.seatbookings WHERE bookedseat = %s", (seat_id,))
+        conn.commit()
+        cur.execute("""UPDATE public.seats SET isoccupied = FALSE WHERE seatid = %s""", (seat_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': f'Booking for seat {seat_id} deleted successfully'})
+    except Exception as e:
+        print(f"Error deleting booking: {e}")
+        return jsonify({'success': False, 'message': 'Server error'}), 500
 
 def generate_time_slots():
     """Generate time slots in 5-minute intervals from 8:00 AM to 8:00 PM"""
@@ -374,4 +355,4 @@ if __name__ == '__main__':
     browser_thread.daemon = True
     browser_thread.start()
     # use socketio.run to start the Flask app to get real-time updates
-    socketio.run(app, host="0.0.0.0", port=port, debug=True)
+    socketio.run(app, host="0.0.0.0", port=port, debug=True, use_reloader=False)

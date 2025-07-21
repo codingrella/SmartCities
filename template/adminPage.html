@@ -26,20 +26,20 @@
                         <div class="form-group d-flex align-items-center mb-3">
                             <span class="me-2"><i class="bi bi-thermometer-half"></i></span>
                             <label for="temperatureThreshold" class="me-2 mb-0">Temperature:</label>
-                            <input type="number" id="lowTemperatureThreshold" name="lowTemperatureThreshold" class="form-control w-auto" value="22" min="15" max="22">
-                            <input type="number" id="highTemperatureThreshold" name="highTemperatureThreshold" class="form-control w-auto" value="25" min="22" max="28">
+                            <input type="number" id="lowTemperatureThreshold" name="lowTemperatureThreshold" class="form-control w-auto" min="15" max="30">
+                            <input type="number" id="highTemperatureThreshold" name="highTemperatureThreshold" class="form-control w-auto" min="15" max="35">
                         </div>
                         <div class="form-group d-flex align-items-center mb-3">
                             <span class="me-2"><i class="bi bi-droplet-half"></i></span>
                             <label for="humidityThreshold" class="me-2 mb-0">Humidity:</label>
-                            <input type="number" id="humidityThreshold" name="humidityThreshold" class="form-control w-auto" value="50" min="30" max="70">
+                            <input type="number" id="humidityThreshold" name="humidityThreshold" class="form-control w-auto" min="30" max="70">
                         </div>
                         <div class="form-group d-flex align-items-center mb-3">
                             <div class="toggle-switch d-flex align-items-center">
                                 <label for="lightSwitch" class="me-2 mb-0">Switch Light</label>
                                 <div class="switch-icon" id="lightSwitchIcon">💡</div>
                                 <label class="switch">
-                                    <input type="checkbox" id="lightSwitch" name="lightSwitch" onloadstart="setLightSwitch()" onclick="toggleLightControl()">
+                                    <input type="checkbox" id="lightSwitch" name="lightSwitch" onclick="toggleLightControl()" onload="updateLightSwitch()">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -48,12 +48,12 @@
                                 <label for="acSwitch" class="me-2 mb-0">Switch AC</label>
                                 <div class="switch-icon" id="acSwitchIcon">❄️</div>
                                 <label class="switch">
-                                    <input type="checkbox" id="acSwitch" name="acSwitch" onloadstart="setACSwitch()" onclick="toggleACControl()">
+                                    <input type="checkbox" id="acSwitch" name="acSwitch" onload="updateACSwitch()" onclick="toggleACControl()">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-primary" id="saveThresholdsButton">Save Thresholds</button>
+                        <button type="button" class="btn btn-primary" onclick="saveThresholds()" id="saveThresholdsButton">Save Thresholds</button>
                     </div>
              <div class="user-authentication">
                 <div class="form-group">
@@ -103,57 +103,47 @@
             <!-- Seating Plan -->
             <div class="card">
             <div class="seating-section">
-                <h3>Select Your Seat</h3>
-                <div class="seat-legend">
-                    <div class="legend-item">
-                        <div class="seat-indicator free"></div>
-                        <span>Available:</span>
-                        <!-- show number of seats available -->
-                        <span id="availableSeatsCount">{{ availableSeatsCount }}</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="seat-indicator occupied"></div>
-                        <span>Occupied:</span>
-                        <span id="occupiedSeatsCount">{{ occupiedSeatsCount }}</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="seat-indicator selected"></div>
-                        <!-- Show selected seat number -->
-                         <!-- if selectedSeatNumber is set -->
-                         {%if selectedSeatNumber %}
-                        <span id="selectedSeatNumber">{{ selectedSeatNumber }}</span>
-                         {%else %}
-                        <span id="selectedSeatNumber">None</span>
-                            {%endif %}
-                    </div>
-                </div>
+                <h3>Select Seat</h3>
+                <div class="seat-stats">
+                            <span class="stat-item">
+                                <span class="seat-indicator free"></span>
+                                Free: <span id="freeSeats">{% if free_seats is not none %}{{ free_seats }}{% else %}0{% endif %}</span>
+                            </span>
+                            <span class="stat-item">
+                                <span class="seat-indicator occupied"></span>
+                                Occupied: <span id="occupiedSeats">{% if occupied_seats is not none %}{{ occupied_seats }}{% else %}0{% endif %}</span>
+                            </span>
+                            <span class="stat-item">
+                                Total: <span id="totalSeats">{% if total_seats is not none %}{{ total_seats }}{% else %}0{% endif %}</span>
+                            </span>
+                        </div>
                 <!-- Room Selection -->
-            <div class="room-selection">
-                <label for="rooms">Select Room:</label>
-                <select name="room" id="rooms" onchange="loadSeatsForRoom()">
-                    <option value="">Study Room 1</option>
-                </select>
-            </div>
-            <!-- booking information on selected seat -->
-             <div class="booking-info">
-                <div class="form-group">
-                    <label for="bookingInfo">Booking Information:</label>
-                    <div class="booking-info-textarea">
-                        <textarea id="bookingInfo" name="bookingInfo" rows="4" placeholder="Booking information will be displayed here..." readonly></textarea>
+                <div class="room-selection">
+                    <label for="rooms">Select Room:</label>
+                    <select name="room" id="rooms" onchange="loadSeatsForRoom()">
+                        <option value="">Study Room 1</option>
+                    </select>
+                </div>
+                <!-- booking information on selected seat -->
+                <div class="booking-info">
+                    <div class="form-group">
+                        <label for="bookingInfo"></label>
+                        <div class="booking-info-textarea">
+                            <textarea id="bookingInfo" name="bookingInfo" rows="1"readonly>{{ bookingInfo }}</textarea>
+                        </div>
                     </div>
                 </div>
-             </div>
-            </div>
-            <div class="seat-container" id="seatsContainer">
-                <div class="seating-grid" id="seatsGrid">
-                    <!-- Seats will be loaded here dynamically -->
                 </div>
-            </div>
+                <div class="seat-container" id="seatsContainer">
+                    <div class="seating-grid" id="seatsGrid">
+                        <!-- Seats will be loaded here dynamically -->
+                    </div>
+                </div>
             
             <!-- Booking Button -->
             <div class="booking-actions">
                 <button id="bookButton" onclick="bookSelectedSeat()" disabled>Book Selected Seat</button>
-                <button onclick="window.close()">Cancel</button>
+                <button id="deleteBookingButton" onclick="deletebooking()" class="btn btn-danger">Delete Booking</button>
             </div>
             </div>
             </div>
@@ -165,7 +155,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
         <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
         <script>
-            const mqttBrokerUrl = 'ws://192.168.188.40:9001';
+            const mqttBrokerUrl = 'ws://192.168.153.237:9001';
             const mqttOptions = {
                 clientId: 'dashboard_' + Math.random().toString(16).substr(2, 8),
                 clean: true,
@@ -218,7 +208,17 @@
                             console.error('Subscription error:', err);
                         }
                     });
-                    
+                    mqttClient.subscribe('library/SR_1/Actuator/#')
+                    mqttClient.on('message', function (topic, message) {
+                        const payload = message.toString();
+                        if (topic === 'library/SR_1/Actuator/Light') {
+                            updateLightSwitch(payload);
+                        }
+                        else if (topic === 'library/SR_1/Actuator/AC') {
+                            updateACSwitch(payload);
+                        }
+                    });
+
                 });
             }
             connectMQTT();
@@ -230,6 +230,7 @@
     let selectedSeat = null;
     let seatsData = [];
     let timeSlotsData = [];
+    let roomId = 'SR_1';
 
     function setLightSwitch() {
         const lightSwitch = document.getElementById('lightSwitch');
@@ -278,36 +279,57 @@
         mqttClient.publish('library/SR_1/Actuator/AC', `${acSwitch.checked ? 'ac_on' : 'ac_off'}`, { qos: 1, retain: true });
     }
 
-    function loadSeatsForRoom() {
-        //const roomSelect = document.getElementById('rooms');
-        //const selectedRoomId = roomSelect.value;
+    function loadSeatingPlan() {
+        fetch('/api/seating-plan')
+            .then(response => response.json())
+            .then(seats => {
+                console.log('Received seats:', seats);
+                const occupiedSeats = seats.filter(s => s.occupied);
+                console.log('Occupied seats:', occupiedSeats);
+                seatsData = seats;
+                displaySeats();
+            })
+            .catch(error => {
+                console.error('Error loading seating plan:', error);
+            });
+        }
+        
+    function displaySeats() {
         const seatsGrid = document.getElementById('seatsGrid');
         const bookButton = document.getElementById('bookButton');
-        
-        // Clear previous seats
         seatsGrid.innerHTML = '';
         selectedSeat = null;
-        bookButton.disabled = true;        
+        bookButton.disabled = true;
         
-        // Create seats with 4 per row layout
+    // Create seats with 6 per row layout
         seatsData.forEach((seat, index) => {
-            // Create new row every 4 seats
-            if (index % 4 === 0) {
+            // Create new row every 6 seats
+            if (index % 6 === 0) {
                 const row = document.createElement('div');
                 row.className = 'seat-row';
                 seatsGrid.appendChild(row);
             }
-            
-            // Create seat element
-            const seatDiv = document.createElement('div');
-            seatDiv.className = `seat ${seat.occupied ? 'occupied' : 'free'}`;
-            seatDiv.textContent = seat.name;
-            seatDiv.title = `${seat.name} - ${seat.occupied ? 'Occupied' : 'Available'}`;
-            
-            seatsGrid.lastElementChild.appendChild(seatDiv);
-        });
-
         
+        // Create seat element
+        const seatDiv = document.createElement('div');
+        seatDiv.className = `seat ${seat.occupied ? 'occupied' : 'free'}`;
+        seatDiv.textContent = seat.name;
+        seatDiv.title = `${seat.name} - ${seat.occupied ? 'Occupied' : 'Available'}`;
+        seatDiv.onclick = () => selectSeat(seat.id, seat.name, roomId);
+        
+        seatsGrid.lastElementChild.appendChild(seatDiv);
+    });
+        
+        // Update statistics
+    const occupied = seatsData.filter(s => s.occupied).length;
+    document.getElementById('totalSeats').textContent = seatsData.length;
+    document.getElementById('occupiedSeats').textContent = occupied;
+    document.getElementById('freeSeats').textContent = seatsData.length - occupied;
+    }
+
+    // Simplified - no room selection needed
+    function loadSeatsForDashboard() {
+        displaySeats();
     }
 
     function selectSeat(seatId, seatName, roomId) {
@@ -319,13 +341,26 @@
         // Select new seat
         event.target.classList.add('selected');
         selectedSeat = {
-            id: seatId,
+            // id: seatId,
+            //only save the number of the string
             name: seatName,
             roomId: roomId
         };
+        // Extract seat number from seatName (e.g., "Seat 03" -> "03")
+        // const seatNumberMatch = seatName.match(/\d+/);
+        // seatName = seatNumberMatch ? `SR_1_${seatNumberMatch[0].padStart(2, '0')}` : seatName;
+        // console.log(`Selected seat: ${seatName} in room ${roomId}`);
+        // console.log(`Selected seat: ${seatName}`);
+        //update selected seat display
+        //document.getElementById('selectedSeatNumber').textContent = seatName;
         
         // Enable book button
         document.getElementById('bookButton').disabled = false;
+        // Display booking info
+        //make sure seatName is a string "SR_1_01" from "Seat 03"
+        // display booking info by clicking on the seat
+
+        displayBookingInfo(seatName);
         
         console.log(`Selected seat: ${seatName} in room ${roomId}`);
     }
@@ -335,16 +370,147 @@
             alert('Bitte wählen Sie einen Platz aus.');
             return;
         }
-        
-        // Save selected occupied seat and Id
-        localStorage.setItem('selectedSeat', JSON.stringify(selectedSeat));
-        alert('Seat {selectedSeat.name} booked succesfully!');
-    }
-        // Add time validation
-    function validateTimeSelection() {
+        //validate data
+        const userId = document.getElementById('userId').value;
         const startTime = document.getElementById('startTime').value;
         const endTime = document.getElementById('endTime').value;
-        
+        const bookingDate = document.getElementById('bookingDate').value;
+        if (!userId || !startTime || !endTime || !bookingDate) {
+            alert('Bitte füllen Sie alle Felder aus.');
+            return;
+        }
+        fetch('/api/book-seat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: userId,
+                // only get the number of the string
+                bookedseat: selectedSeat.name,
+                startTime: startTime,
+                endTime: endTime,
+                date: bookingDate,
+                // roomId: selectedSeat.roomId,
+                // seatName: selectedSeat.name
+            })
+        })
+        .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+        .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            alert(`Platz ${selectedSeat.name} wurde erfolgreich gebucht!`);
+
+            // Update the seat immediately in local data
+            const seatIndex = seatsData.findIndex(seat => seat.id === selectedSeat.id);
+            if (seatIndex !== -1) {
+                seatsData[seatIndex].occupied = true;
+            }
+            
+            // Den geklickten Seat als belegt markieren
+            const seatElements = document.querySelectorAll('.seat');
+            seatElements.forEach(seatElement => {
+                if (seatElement.textContent === selectedSeat.name) {
+                    seatElement.classList.remove('free', 'selected');
+                    seatElement.classList.add('occupied');
+                    seatElement.onclick = null; // Remove click handler
+                }
+            });
+            //Update statistics
+            updateSeatStatistics();
+            selectedSeat = null;
+            document.getElementById('bookButton').disabled = true;
+            
+            // Seating plan neu laden
+            setTimeout(() => {
+                loadSeatingPlan();
+            }, 1000);
+            
+        } else {
+               alert(`Fehler beim Buchen: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Booking error:', error);
+        alert(`Fehler beim Buchen des Platzes: ${error.message}`);
+    });
+}
+
+    function deletebooking() {
+        if (!selectedSeat) {
+            alert('Please select a seat to delete the booking.');
+            return;
+        }
+        const userId = document.getElementById('userId').value;
+        if (!userId) {
+            alert('Please enter your User ID.');
+            return;
+        }
+        fetch('/api/delete-booking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: userId,
+                bookedseat: selectedSeat.name
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert(`Buchung für Platz ${selectedSeat.name} wurde erfolgreich gelöscht!`);
+                
+                // Update the seat immediately in local data
+                const seatIndex = seatsData.findIndex(seat => seat.id === selectedSeat.id);
+                if (seatIndex !== -1) {
+                    seatsData[seatIndex].occupied = false;
+                }
+                
+                // Den geklickten Seat als frei markieren
+                const seatElements = document.querySelectorAll('.seat');
+                seatElements.forEach(seatElement => {
+                    if (seatElement.textContent === selectedSeat.name) {
+                        seatElement.classList.remove('occupied', 'selected');
+                        seatElement.classList.add('free');
+                        seatElement.onclick = () => selectSeat(selectedSeat.id, selectedSeat.name, roomId); // Re-attach click handler
+                    }
+                });
+                
+                // Update statistics
+                updateSeatStatistics();
+                selectedSeat = null;
+                document.getElementById('bookButton').disabled = true;
+
+            } else {
+                alert(`Fehler beim Löschen der Buchung: ${data.message}`);
+            }
+        })
+    }
+
+    function updateSeatStatistics() {
+                    const occupied = seatsData.filter(s => s.occupied).length;
+                    document.getElementById('totalSeats').textContent = seatsData.length;
+                    document.getElementById('occupiedSeats').textContent = occupied;
+                    document.getElementById('freeSeats').textContent = seatsData.length - occupied;
+                }
+
+// Add time validation
+function validateTimeSelection() {
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+
         if (startTime && endTime) {
             const startMinutes = timeToMinutes(startTime);
             const endMinutes = timeToMinutes(endTime);
@@ -373,43 +539,71 @@
     });
 
     function displayBookingInfo() {
-        const bookingInfo = document.getElementById('bookingInfo');
+        if (!selectedSeat) {
+            alert('Please select a seat first.');
+            return;
+        }
+        // Get selected seat name
+        const seatName = selectedSeat.name;
+        // Get other form values
         const bookingDate = document.getElementById('bookingDate').value;
         const startTime = document.getElementById('startTime').value;
         const endTime = document.getElementById('endTime').value;
-        const roomSelect = document.getElementById('rooms');
-        const selectedRoomName = roomSelect.options[roomSelect.selectedIndex].text;
-        
+        const selectedRoomName = document.getElementById('rooms').value || 'SR_1'; // Default to SR_1 if no room selected
+        const bookingInfo = document.getElementById('bookingInfo');
+
+        // Pass selectedSeat as query parameter to API
+        fetch(`/api/get-booking-info`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                seat: selectedSeat.name,
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Booking info:', data);
+                if (data.success) {
+                    // Update booking info textarea
+                    bookingInfo.value = `Room: ${selectedRoomName}\nSeat: ${seatName}\nDate: ${bookingDate}\nStart Time: ${startTime}\nEnd Time: ${endTime}\n${data.info || ''}`;
+                    document.getElementById('bookingInfo.value') = bookingInfo.value;
+                } else {
+                    alert(`Error fetching booking info: ${data.message}`);
+                }
+            });
+    }
         if (bookingDate && startTime && endTime && selectedSeat) {
             bookingInfo.value = `Room: ${selectedRoomName}\nSeat: ${selectedSeat.name}\nDate: ${bookingDate}\nStart Time: ${startTime}\nEnd Time: ${endTime}`;
         } else {
             bookingInfo.value = 'Please fill in all fields.';
         }
-    }
+    
 
-
+    window.addEventListener('load', function() {
+        //initializeLightLevel();
+        loadSeatingPlan();
+    });
     function toggleThresholdCard() {
         const cardBody = document.getElementById('thresholdCardBody');
         cardBody.style.display = cardBody.style.display === 'none' ? 'block' : 'none';
     }
     function saveThresholds() {
-        const temp = document.getElementById('temperatureThreshold').value;
-        const humidity = document.getElementById('humidityThreshold').value;
-        const light = document.getElementById('lightThreshold').value;
+        const lowTemperatureThreshold = document.getElementById('lowTemperatureThreshold').value;
+        const highTemperatureThreshold = document.getElementById('highTemperatureThreshold').value;
+        const humidityThreshold = document.getElementById('humidityThreshold').value;
         // publish thresholds to server with mqtt
-        // mqttClient.publish('library/SR_1/Sensor/Threshold_Temperature',
-        //     `{'Device': 'Temperature_Sensor_Low', 'Threshold_Value': '${lowTemperatureThreshold}'}`,
-        //     { qos: 1, retain: true });
-        // mqttClient.publish('library/SR_1/Sensor/Threshold_Temperature',
-        //     `{'Device': 'Temperature_Sensor_High', 'Threshold_Value': '${highTemperatureThreshold}'}`,
-        //     { qos: 1, retain: true });
-        // mqttClient.publish('library/SR_1/Sensor/Threshold_Humidity',
-        //     `{'Device': 'Humidity_Sensor', 'Threshold_Value': '${humidityThreshold}'}`,
-        //     { qos: 1, retain: true });
-        // mqttClient.publish('library/SR_1/Sensor/Threshold_Light',
-        //     `{'Device': 'Light_Sensor', 'Threshold_Value': '${lightThreshold}'}`,
-        //     { qos: 1, retain: true });
-        //alert(`Thresholds saved:\nTemperature: ${temp}\nHumidity: ${humidity}\nLight: ${light}`);
+        mqttClient.publish('library/SR_1/Sensor/Threshold_Temperature_Low',
+            `{'Device': 'Temperature_Threshold_Low', 'Value': '${lowTemperatureThreshold}'}`,
+            { qos: 1, retain: true });
+        mqttClient.publish('library/SR_1/Sensor/Threshold_Temperature_High',
+            `{'Device': 'Temperature_Threshold_High', 'Value': '${highTemperatureThreshold}'}`,
+            { qos: 1, retain: true });
+        mqttClient.publish('library/SR_1/Sensor/Threshold_Humidity',
+            `{'Device': 'Humidity_Threshold', 'Value': '${humidityThreshold}'}`,
+            { qos: 1, retain: true });
+        alert(`Thresholds saved:\nTemperature: ${temp}\nHumidity: ${humidity}`);
     }
 
     

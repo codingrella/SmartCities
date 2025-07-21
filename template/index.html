@@ -12,9 +12,30 @@
         <div class="container">
         <h1>Welcome to the Think Lounge!</h1>
         <p>Please enter the library.</p>
-        <a href="/dashboard">Go to Dashboard</a>
+        <a href="/dashboard" onclick="userlogin()">Go to Dashboard</a>
         <!-- admin -->
-        <a href="/admin">Go to Admin Page</a>
+        <a href="/admin" onclick="adminlogin()">Go to Admin Page</a>
         </div>
     </body>
 </html>
+
+<script>
+    function adminlogin() {
+        const password = prompt("Please enter the admin password:");
+        if (password !== "Group07") {
+            alert("Incorrect password. You are not authorized to access the admin page.");
+            return false; // Prevent navigation
+        }
+        return true; // Allow navigation
+    }
+
+    function userlogin() {
+        //open a new window with the user login page 
+        const userWindow = window.open("/user", "_blank");
+        if (!userWindow) {
+            alert("Please allow pop-ups for this site to open the user login page.");
+        }
+        // Optionally, you can focus on the new window
+        userWindow.focus();
+    }
+</script>

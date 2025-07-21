@@ -131,6 +131,8 @@
             .then(response => response.json())
             .then(seats => {
                 console.log('Received seats:', seats);
+                const occupiedSeats = seats.filter(s => s.occupied);
+                console.log('Occupied seats:', occupiedSeats);
                 seatsData = seats;
                 displaySeats();
             })
@@ -139,14 +141,14 @@
             });
         }
         
-        function displaySeats() {
-            const seatsGrid = document.getElementById('seatsGrid');
-            const bookButton = document.getElementById('bookButton');
-            seatsGrid.innerHTML = '';
-            selectedSeat = null;
-            bookButton.disabled = true;
-            
-        // Create seats with 4 per row layout
+    function displaySeats() {
+        const seatsGrid = document.getElementById('seatsGrid');
+        const bookButton = document.getElementById('bookButton');
+        seatsGrid.innerHTML = '';
+        selectedSeat = null;
+        bookButton.disabled = true;
+        
+    // Create seats with 4 per row layout
         seatsData.forEach((seat, index) => {
             // Create new row every 4 seats
             if (index % 4 === 0) {
@@ -154,22 +156,22 @@
                 row.className = 'seat-row';
                 seatsGrid.appendChild(row);
             }
-            
-            // Create seat element
-            const seatDiv = document.createElement('div');
-            seatDiv.className = `seat ${seat.occupied ? 'occupied' : 'free'}`;
-            seatDiv.textContent = seat.name;
-            seatDiv.title = `${seat.name} - ${seat.occupied ? 'Occupied' : 'Available'}`;
-            seatDiv.onclick = () => selectSeat(seat.id, seat.name, seat.room_id);
-            
-            seatsGrid.lastElementChild.appendChild(seatDiv);
-        });
+        
+        // Create seat element
+        const seatDiv = document.createElement('div');
+        seatDiv.className = `seat ${seat.occupied ? 'occupied' : 'free'}`;
+        seatDiv.textContent = seat.name;
+        seatDiv.title = `${seat.name} - ${seat.occupied ? 'Occupied' : 'Available'}`;
+        seatDiv.onclick = () => selectSeat(seat.id, seat.name, seat.room_id);
+        
+        seatsGrid.lastElementChild.appendChild(seatDiv);
+    });
         
         // Update statistics
-        const occupied = seatsData.filter(s => s.occupied).length;
-        document.getElementById('totalSeats').textContent = seatsData.length;
-        document.getElementById('occupiedSeats').textContent = occupied;
-        document.getElementById('freeSeats').textContent = seatsData.length - occupied;
+    const occupied = seatsData.filter(s => s.occupied).length;
+    document.getElementById('totalSeats').textContent = seatsData.length;
+    document.getElementById('occupiedSeats').textContent = occupied;
+    document.getElementById('freeSeats').textContent = seatsData.length - occupied;
     }
 
     // Simplified - no room selection needed
@@ -186,10 +188,14 @@
         // Select new seat
         event.target.classList.add('selected');
         selectedSeat = {
-            id: seatId,
+            //id: seatId,
+            //only save the number of the string
             name: seatName,
             roomId: roomId
         };
+
+        //update selected seat display
+        //document.getElementById('selectedSeatNumber').textContent = seatName;
         
         // Enable book button
         document.getElementById('bookButton').disabled = false;
@@ -202,44 +208,89 @@
             alert('Bitte wählen Sie einen Platz aus.');
             return;
         }
-        else {
+        //validate data
+        const userId = document.getElementById('userId').value;
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+        const bookingDate = document.getElementById('bookingDate').value;
+        if (!userId || !startTime || !endTime || !bookingDate) {
+            alert('Bitte füllen Sie alle Felder aus.');
+            return;
+        }
         fetch('/api/book-seat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userId: document.getElementById('userId').value,
-                bookedseat: selectedSeat.id,
-                startTime: document.getElementById('startTime').value,
-                endTime: document.getElementById('endTime').value,
+                userId: userId,
+                // only get the number of the string
+                bookedseat: selectedSeat.name,
+                startTime: startTime,
+                endTime: endTime,
+                date: bookingDate,
                 // roomId: selectedSeat.roomId,
                 // seatName: selectedSeat.name
             })
         })
-        .then(response => response.json())
+        .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
         .then(data => {
-            if (data.success) {
-                alert(`Platz ${selectedSeat.name} wurde erfolgreich gebucht!`);
-                // Mark seat as occupied
-                event.target.classList.remove('free', 'selected');
-                event.target.classList.add('occupied');
-                event.target.disabled = true;
-                selectedSeat = null;
-                document.getElementById('bookButton').disabled = true;
-            } else {
-                alert(`Fehler beim Buchen: ${data.message}`);
+        console.log('Response data:', data);
+        if (data.success) {
+            alert(`Platz ${selectedSeat.name} wurde erfolgreich gebucht!`);
+
+            // Update the seat immediately in local data
+            const seatIndex = seatsData.findIndex(seat => seat.id === selectedSeat.id);
+            if (seatIndex !== -1) {
+                seatsData[seatIndex].occupied = true;
             }
-        })
-        .catch(error => {
-            console.error('Booking error:', error);
-            alert('Fehler beim Buchen des Platzes.');
-        });
-    }
+            
+            // Den geklickten Seat als belegt markieren
+            const seatElements = document.querySelectorAll('.seat');
+            seatElements.forEach(seatElement => {
+                if (seatElement.textContent === selectedSeat.name) {
+                    seatElement.classList.remove('free', 'selected');
+                    seatElement.classList.add('occupied');
+                    seatElement.onclick = null; // Remove click handler
+                }
+            });
+            //Update statistics
+            updateSeatStatistics();
+
+            function updateSeatStatistics() {
+                const occupied = seatsData.filter(s => s.occupied).length;
+                document.getElementById('totalSeats').textContent = seatsData.length;
+                document.getElementById('occupiedSeats').textContent = occupied;
+                document.getElementById('freeSeats').textContent = seatsData.length - occupied;
+            }
+
+            selectedSeat = null;
+            document.getElementById('bookButton').disabled = true;
+            
+            // Seating plan neu laden
+            setTimeout(() => {
+                loadSeatingPlan();
+            }, 1000);
+            
+        } else {
+               alert(`Fehler beim Buchen: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Booking error:', error);
+        alert(`Fehler beim Buchen des Platzes: ${error.message}`);
+    });
+}
         
         // Save selected occupied seat and Id
-        localStorage.setItem('selectedSeat', JSON.stringify(selectedSeat));
-        alert('Seat {selectedSeat.name} booked succesfully!');
+        // localStorage.setItem('selectedSeat', JSON.stringify(selectedSeat));
+        // alert(`Seat ${selectedSeat.name} booked successfully!`);
 
     //function to secure login and encode password
     function secureLogin() {
@@ -254,7 +305,6 @@
         const fernet = new cryptography.fernet.Fernet('your-secret-key');
         const encodedPassword = fernet.encrypt(password);
         console.log(`User ID: ${userId}, Encoded Password: ${encodedPassword}`);
-    }
     }
 
     // Add time validation

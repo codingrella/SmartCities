@@ -121,10 +121,6 @@ button {
     align-items: center;
     padding: 20px;
     margin-left:100px;
-    /* border: transparent;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    min-height: 200px; */
     max-width: 400px;
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
     flex-direction: row-reverse;
@@ -194,12 +190,6 @@ button {
     text-align: center;
     margin-top: 20px;
 }
-
-/* Dashboard Layout Adjustments */
-/* .dashboard-row {
-    margin: 20px 0;
-    gap: 20px;
-} */
 
 .dashboard-card-big {
     height: 580px; /* Fixed height to make cards smaller */
@@ -387,11 +377,3 @@ button {
     flex: 1;
     font-size: 12px;
 }
-
-/* .light-level-text {
-    text-align: center;
-    font-weight: bold;
-    color: #333;
-    margin-top: 8px;
-    font-size: 14px;
-} */

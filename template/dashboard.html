@@ -93,23 +93,38 @@
                                 <div class="sensor-icon">🔊</div>
                                 <div class="sensor-info">
                                     <h4>Sound Level</h4>
-                                    <div class="sensor-value" id="soundlevel">{% if soundlevel is not none %}{{ soundlevel }}{% else %}0{% endif %}</div>
+                                    <div class="sensor-value" id="soundlevel">
+                                        <div class="volume-bar-container" style="width: 120px; height: 16px; background: #e9ecef; border-radius: 8px; overflow: hidden;">
+                                            <div id="volumeBar" style="height: 100%; width: 0%; background: #0d6efd; transition: width 0.3s;"></div>
+                                        </div>
+                                        <!-- <span id="volumeValue" style="margin-left: 8px;">0</span> -->
+                                    </div>
+                                    <script>
+                                        // Update the volume bar when soundlevel changes
+                                        function updateVolumeBar(value) {
+                                            console.log('Updating volume bar with value:', value);
+                                            const max = 500;
+                                            const percent = Math.min(100, Math.max(0, (value / max) * 100));
+                                            document.getElementById('volumeBar').style.width = percent + '%';
+                                            // document.getElementById('volumeValue').textContent = value;
+                                        }
+                                    </script>
                                 </div>
                             </div>
                             <div class="sensor-item">
-                            <div class="sensor-icon" id="lightIcon">🌑</div>
+                            <div class="sensor-icon" id="lightIcon">☀️</div>
                             <div class="sensor-info">
                                 <h4>Outside Light Level</h4>    
                                 <div class="sensor-value">
                                     <div class="range-slider">
-                                        <input type="range" min="0" max="2" value="0" class="slider" id="lightLevelSlider" oninput="updateLightLevel()">
+                                        <input type="range" min="0" max="2" value="2" class="slider" id="lightLevelSlider" oninput="updateLightLevel()">
                                         <div class="slider-ticks">
                                             <span class="tick">Dark</span>
                                             <span class="tick">Sunny</span>
                                             <span class="tick">Very Sunny</span>
                                         </div>
                                     </div>
-                                    <div class="light-level-text" id="lightLevelText">Dark</div>
+                                    <div class="light-level-text" id="lightLevelText">Very Sunny</div>
                                 </div>
                             </div>
                         </div>
@@ -126,7 +141,7 @@
         <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
         <script>
             // MQTT connection setup
-            const mqttBrokerUrl = 'ws://192.168.188.40:9001'; // Example public broker
+            const mqttBrokerUrl = 'ws://192.168.153.237:9001'; // Example public broker
             const mqttOptions = {
                 clientId: 'dashboard_' + Math.random().toString(16).substr(2, 8),
                 clean: true,
@@ -148,8 +163,8 @@
                             // publish on new input of outside lightlevel slider
                             document.getElementById('lightLevelSlider').addEventListener('input', function () {
                                 const lightlevel = this.value;
-                                mqttClient.publish('library/SR_1/Sensor/Outside_Light',
-                                    `{'Device': 'Outside_Light', 'Value': '${lightlevel}', 'TimeStamp': '${new Date().toLocaleTimeString()}'}`,
+                                mqttClient.publish('library/SR_1/Sensor/Outside_Sensor',
+                                    `{'Device': 'Outside_Sensor', 'Value': '${lightlevel}', 'TimeStamp': '${new Date().toLocaleTimeString()}'}`,
                                     { qos: 1, retain: true });
                             });
                         } else if (err.message === 'Invalid topic') {
@@ -188,6 +203,7 @@
                             document.getElementById('humidity').textContent = data.Value + '%';
                         } else if (data.Device === 'Sound_Sensor') {
                             document.getElementById('soundlevel').textContent = data.Value;
+                            updateVolumeBar(Number(data.Value));
                         } else if (data.Device === 'Light_Sensor') {
                             document.getElementById('lighting').value = data.Value;
                             updateLightLevel();
@@ -219,6 +235,9 @@
         } else {
             alert('Please allow pop-ups for this website to open the booking system.');
         }
+        bookingWindow.close = function() {
+            // Reload seating plan when booking window is closed
+            loadSeatingPlan();}
     }
 
     function loadSeatingPlan() {
@@ -306,11 +325,11 @@
 
     function initializeLightLevel() {
         const slider = document.getElementById('lightLevelSlider');
-        slider.value = 0;
+        slider.value = 2;
         updateLightLevel();
     }
 
-    function startCheckIn() {
+    function startCheckIn() {        
         const button = document.querySelector('.button button');
         button.style.backgroundColor = '#28a745';
         button.textContent = 'Checked In';

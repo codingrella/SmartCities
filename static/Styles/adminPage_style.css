@@ -58,7 +58,11 @@ h3 {
     flex-wrap: wrap;
     justify-content: center;
     gap: 1rem;
-    width: 1500px; 
+    width: 100%;
+    --bs-gutter-x: 1.5rem;
+    margin-top: calc(-1 * var(--bs-gutter-y));
+    margin-right: calc(-.5 * var(--bs-gutter-x));
+    margin-left: calc(-.5 * var(--bs-gutter-x));
 }
 
 .card {
@@ -67,8 +71,12 @@ h3 {
     border-radius: 0.25rem;
     padding: 1rem;
     margin-bottom: 1rem;
-    height: 580px !important;
-    width: 520px !important;
+    height: 600px !important;
+    width: 550px !important;
+}
+
+.user-authentication {
+    margin-top: 20px;
 }
 
 .form-group {
@@ -243,3 +251,19 @@ input:checked + .slider:before {
         background-color: #6c757d;
         cursor: not-allowed;
     }
+
+.seating-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    max-width: 450px;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    flex-direction: row-reverse;
+}
+
+.seat-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 5px;
+}
