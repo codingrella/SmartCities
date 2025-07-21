@@ -272,10 +272,12 @@ class AIPlannerInterface:
         elif f'(motion_detected {self.room})' not in inits and f'(inside_isLight {self.room})' in inits: goals.append(f'(saveEnergy_lights {self.room})')
         
         if f'(outside_isVerySunny {self.room})' in inits: goals.append(f'(stopBrightness {self.room})')
-        elif f'(outside_isVerySunny {self.room})' not in inits and f'(outside_isDark {self.room})' not in inits: 
-            goals.append(f'(saveEnergy_lights {self.room})')
-            goals.append(f'(inside_isLight {self.room})')
-        elif f'(outside_isDark {self.room})' in inits and f'(lighting_on l{roomNr} {self.room})' not in inits: goals.append(f'(inside_isLight {self.room})')
+        
+        # if f'(outside_isVerySunny {self.room})' in inits: goals.append(f'(stopBrightness {self.room})')
+        # elif f'(outside_isVerySunny {self.room})' not in inits and f'(outside_isDark {self.room})' not in inits: 
+        #     goals.append(f'(saveEnergy_lights {self.room})')
+        #     goals.append(f'(inside_isLight {self.room})')
+        # elif f'(outside_isDark {self.room})' in inits and f'(lighting_on l{roomNr} {self.room})' not in inits: goals.append(f'(inside_isLight {self.room})')
         
         return goals
             
