@@ -110,8 +110,7 @@
                         (not (outside_isDark ?r))
                         (blinds_down ?b ?r))
     :effect (and (inside_isLight ?r)
-                 (not(blinds_down ?b ?r))
-                 (saveEnergy_lights ?r))
+                 (not(blinds_down ?b ?r)))
 )
 
 )
