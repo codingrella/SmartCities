@@ -314,9 +314,9 @@ class AIPlannerInterface:
         for step in steps:
             elements = step.split(' ')
             
-            if 'ON' in elements[0] or 'OPEN' in elements[0]:
+            if 'ON' in elements[0] or 'CLOSE' in elements[0]:
                 self.actions[elements[0]](1)
-            elif 'OFF' in elements[0] or 'CLOSE' in elements[0]:
+            elif 'OFF' in elements[0] or 'OPEN' in elements[0]:
                 self.actions[elements[0]](0)
                  
         
