@@ -31,7 +31,7 @@ class AIPlannerInterface:
                               'Outside_Sensor': 0,
                               'Sound_Sensor': 0,
                               'Temperature_Sensor': 0 }
-        self.actuatorValues = { 'Blinds': 0,
+        self.actuatorValues = { 'Blinds': 1,
                                 'Light': 1,
                                 'AC': 1,
                                 'Heater': 0 }
