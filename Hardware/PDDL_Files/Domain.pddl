@@ -28,7 +28,7 @@
     (saveEnergy_acs ?r -room)
     (saveEnergy_lights ?r -room)
     (saveEnergy_heater ?r -room)
-    
+    (stopBrightness ?r -room)
     
     ; -------------------------------------- SYSTEM --------------------------------------
     ; AIRCONDITIONING
@@ -101,7 +101,8 @@
                         (outside_isDark ?r))
                         (not(blinds_down ?b ?r)))
     :effect (and (not (inside_isLight ?r))
-                 (blinds_down ?b ?r))
+                 (blinds_down ?b ?r)
+                 (stopBrightness ?r))
 )
 
 (:action openBlinds
