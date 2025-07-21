@@ -107,10 +107,12 @@ class AIPlannerInterface:
                 
         if res['Device'] == 'Motion_Sensor':
             if res['Value'] == 1:
+                print('Motion Detected')
                 self.sensorValues[res['Device']] = 1
                 self.time_toggleZeroDetected = -1
                 self.replan = True
             elif res['Value'] == 0 and self.sensorValues[res['Device']] == 1:
+                print('Motion toogle detected')
                 self.noReplannedSinceMaxRange = True
                 self.time_toggleZeroDetected = res['TimeStamp']        
         elif 'Sensor' in res['Device']:
@@ -335,6 +337,7 @@ if __name__ == "__main__":
             time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
             difference = time2 - time1
             difference = int(difference.total_seconds())
+            print('DIFFERENCE:   ' + str(difference))
         else:
             difference = 0
         
