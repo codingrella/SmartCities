@@ -97,8 +97,7 @@
 ; also close blinds if light is turned on?
 (:action closeBlinds
     :parameters (?b -blinds ?r -room)
-    :precondition (and  (or (outside_isVerySunny ?r)
-                        (outside_isDark ?r))
+    :precondition (and  (outside_isVerySunny ?r)
                         (not(blinds_down ?b ?r)))
     :effect (and (not (inside_isLight ?r))
                  (blinds_down ?b ?r)
