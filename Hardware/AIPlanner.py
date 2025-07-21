@@ -272,7 +272,7 @@ class AIPlannerInterface:
         elif f'(outside_isVerySunny {self.room})' not in inits and f'(outside_isDark {self.room})' not in inits: 
             goals.append(f'(saveEnergy_lights {self.room})')
             goals.append(f'(inside_isLight {self.room})')
-        elif f'(outside_isDark {self.room})': goals.append(f'(inside_isLight {self.room})')
+        elif f'(outside_isDark {self.room})' in inits and f'(lighting_on l{roomNr} {self.room})' not in inits: goals.append(f'(inside_isLight {self.room})')
         
         return goals
             
