@@ -79,7 +79,7 @@
 (:action turnOnLight
     :parameters (?l -light ?r -room)
     :precondition (and (not (inside_isLight ?r))
-                       (motion_detected ?r)
+                       ;(motion_detected ?r)
                        (not(lighting_on ?l ?r)))
     :effect (and (inside_isLight ?r)
                  (lighting_on ?l ?r))
@@ -88,7 +88,7 @@
 (:action turnOffLight
     :parameters (?l -light ?r -room)
     :precondition (and (not (outside_isVerySunny ?r))
-                       (not(motion_detected ?r))
+                       ;(not(motion_detected ?r))
                        (lighting_on ?l ?r))
     :effect (and (saveEnergy_lights ?r)
                  (not(lighting_on ?l ?r)))
