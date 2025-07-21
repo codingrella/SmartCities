@@ -28,7 +28,7 @@
     (saveEnergy_acs ?r -room)
     (saveEnergy_lights ?r -room)
     (saveEnergy_heater ?r -room)
-    
+    (stopBrightness ?r -room)
     
     ; -------------------------------------- SYSTEM --------------------------------------
     ; AIRCONDITIONING
@@ -43,8 +43,9 @@
 )
 
 (:action turnOnAC
-    :parameters (?ac -airConditioning ?r -room)
+    :parameters (?ac -airConditioning ?h -heater ?r -room)
     :precondition (and (not (airConditioning_on ?ac ?r))
+                       (not (heater_on ?h ?r))
                        (or (temp_isHot ?r)
                        (hum_isBad ?r)))
     :effect (and (temp_isGood ?r)
@@ -60,8 +61,9 @@
 )
 
 (:action turnOnHeater
-    :parameters (?h -heater ?r -room)
+    :parameters (?h -heater ?ac -airConditioning ?r -room)
     :precondition (and (not(heater_on ?h ?r))
+                       (not (airConditioning_on ?ac ?r))
                        (temp_isCold ?r))
     :effect (and (temp_isGood ?r)
                  (heater_on ?h ?r))
@@ -77,7 +79,7 @@
 (:action turnOnLight
     :parameters (?l -light ?r -room)
     :precondition (and (not (inside_isLight ?r))
-                       (motion_detected ?r)
+                       ;(motion_detected ?r)
                        (not(lighting_on ?l ?r)))
     :effect (and (inside_isLight ?r)
                  (lighting_on ?l ?r))
@@ -86,7 +88,7 @@
 (:action turnOffLight
     :parameters (?l -light ?r -room)
     :precondition (and (not (outside_isVerySunny ?r))
-                       (not(motion_detected ?r))
+                       ;(not(motion_detected ?r))
                        (lighting_on ?l ?r))
     :effect (and (saveEnergy_lights ?r)
                  (not(lighting_on ?l ?r)))
@@ -95,11 +97,11 @@
 ; also close blinds if light is turned on?
 (:action closeBlinds
     :parameters (?b -blinds ?r -room)
-    :precondition (and  (or (outside_isVerySunny ?r)
-                        (outside_isDark ?r))
+    :precondition (and  (outside_isVerySunny ?r)
                         (not(blinds_down ?b ?r)))
     :effect (and (not (inside_isLight ?r))
-                 (blinds_down ?b ?r))
+                 (blinds_down ?b ?r)
+                 (stopBrightness ?r))
 )
 
 (:action openBlinds

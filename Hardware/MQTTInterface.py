@@ -37,12 +37,14 @@ class MQTTPublisher:
         
         
     def publish(self, room, deviceType, device, value):
-        t = time.localtime()
-        current_time = time.strftime("%H:%M:%S", t)
-        msg = str({'Device': device, 'Value': value, 'TimeStamp': current_time})
+        if device == 'AC' or device == 'Light':
+            msg = str(value)
+        else:
+            t = time.localtime()
+            current_time = time.strftime("%H:%M:%S", t)
+            msg = str({'Device': device, 'Value': value, 'TimeStamp': current_time})
             
         topic = f"library/{room}/{deviceType}/{device}"
-        
         result = self.client.publish(topic, msg)
     
     

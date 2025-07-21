@@ -6,8 +6,8 @@ from grove_rgb_lcd import *
 
 
 def getNoiseLevelText(noiseLevel):
-    maxThreshold = 700
-    minThreshold = 100
+    maxThreshold = 350
+    minThreshold = 190
     
     if noiseLevel < minThreshold:
         noisePercentage = 0
@@ -19,6 +19,8 @@ def getNoiseLevelText(noiseLevel):
     text = "Noise Level: \n"
     
     noiseScale = int(noisePercentage / 8.3)
+    
+    print(noiseScale)
     
     text += ''.join([chr(255)] * noiseScale)
     text += ''.join([chr(219)] * (12-noiseScale))

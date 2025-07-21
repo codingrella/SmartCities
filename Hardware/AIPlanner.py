@@ -14,7 +14,7 @@ from MQTTInterface import MQTTSubscriber
 from MQTTInterface import MQTTPublisher
 
 
-MAX_RANGE_MOTION_DETECTED = 5*60            # 5 minutes
+MAX_RANGE_MOTION_DETECTED = 1*60            # 5 minutes
 OPENING_HOUR = datetime.strptime('08:00:00', '%H:%M:%S')
 CLOSING_HOUR = datetime.strptime('20:00:00', '%H:%M:%S')
 
@@ -53,8 +53,8 @@ class AIPlannerInterface:
         
         self.room = room
         
-        self.motionToggleOne = False
-        self.motionToggleZero = True
+        self.replan = True
+        self.noReplannedSinceMaxRange = False
         self.time_toggleZeroDetected = datetime.now().strftime("%H:%M:%S")
         # self.time_toggleOneDetected = datetime.now().strftime("%H:%M:%S")
         
@@ -79,59 +79,51 @@ class AIPlannerInterface:
     def on_message(self, client, userdata, msg):
         # On manual intervention from UI
         if 'light_on' == msg.payload.decode(): 
-            self.actuatorValues['Lights'] = 1
-            # self.actions['TURNONLIGHT'](1)
+            self.actuatorValues['Light'] = 1
             return
         elif 'light_off' == msg.payload.decode():
-            self.actuatorValues['Lights'] = 0
-            # self.actions['TURNOFFLIGHT'](0)
+            self.actuatorValues['Light'] = 0
             return
         elif 'ac_on' == msg.payload.decode(): 
             self.actuatorValues['AC'] = 1
-            # self.actions['TURNONLIGHT'](1)
             return
         elif 'ac_off' == msg.payload.decode():
             self.actuatorValues['AC'] = 0
-            # self.actions['TURNOFFLIGHT'](0)
             return
         elif 'up' == msg.payload.decode(): 
-        # elif 'start' == msg.payload.decode(): 
             self.actions['OPENBLINDS'](0)
             return
         elif 'down' == msg.payload.decode():
-        # elif 'stop' == msg.payload.decode():
             self.actions['CLOSEBLINDS'](1)
             return
        
         # On hardware updates
         res = eval(msg.payload.decode())
         
-        time1 = datetime.strptime(self.time_toggleZeroDetected, '%H:%M:%S')
-        time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
-        difference = time2 - time1
         
+        
+        if 'Outside_Sensor' == res['Device']:
+                self.replan = True
+                
         if res['Device'] == 'Motion_Sensor':
-            if self.sensorValues[res['Device']] == 0 and res['Value'] == 1:
+            if res['Value'] == 1:
                 self.sensorValues[res['Device']] = 1
-                # self.time_toggleOneDetected = res['TimeStamp']
-                self.motionToggleZero = False
-                if int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED:
-                    self.motionToggleOne = True
-                print('Motion toggle to 1')
-            elif self.sensorValues[res['Device']] == 1 and res['Value'] == 0:
-                self.sensorValues[res['Device']] = 0
-                self.time_toggleZeroDetected = res['TimeStamp']
-                self.motionToggleZero = True
-                self.motionToggleOne = False
-                print('Motion toggle to 0')
-        
-        if 'Sensor' in res['Device']:
+                self.time_toggleZeroDetected = -1
+                self.replan = True
+            elif res['Value'] == 0 and self.sensorValues[res['Device']] == 1:
+                self.noReplannedSinceMaxRange = True
+                self.time_toggleZeroDetected = res['TimeStamp']        
+        elif 'Sensor' in res['Device']:
             self.sensorValues[res['Device']] = res['Value']
         elif 'Threshold_Low' in res['Device'] and 'Temp' in res['Device']:
             self.thresholdValues['temp_lower'] = float(res['Value'])
+            print('NEW THRESHOLD, TEMPERATURE LOW:   ' + str(res['Value']))
+            self.replan = True
         elif 'Threshold_High' in res['Device'] and 'Temp' in res['Device']:
             self.thresholdValues['temp_upper'] = float(res['Value'])
-        elif 'Huminidty_Threshold' != res['Device'] and 'Light' != res['Device']:
+            print('NEW THRESHOLD, TEMPERATURE UPPER:   ' + str(res['Value']))
+            self.replan = True
+        elif 'Humidity_Threshold' != res['Device'] and 'Light' != res['Device']:
             self.actuatorValues[res['Device']] = res['Value']
     
     
@@ -159,7 +151,18 @@ class AIPlannerInterface:
             
     
     def _setAC(self, value):
+        if value == 'ac_on':
+            value = 1
+        elif value == 'ac_off':
+            value = 0
+            
         self.actuatorValues['AC'] = value
+        
+        if value == 1:
+            value = 'ac_on'
+        elif value == 0:
+            value = 'ac_off'
+            
         self.pub.run(f'{self.room}', 'Actuator', 'AC', value)
         
     def _setHeater(self, value):
@@ -167,18 +170,31 @@ class AIPlannerInterface:
         self.pub.run(f'{self.room}', 'Actuator', 'Heater', value)
     
     def _setLight(self, value):
-        self.actuatorValues['Lights'] = value
+        if value == 'light_on':
+            value = 1
+        elif value == 'light_off':
+            value = 0
+            
+        self.actuatorValues['Light'] = value
+        
+        if value == 1:
+            value = 'light_on'
+        elif value == 0:
+            value = 'light_off'
         self.pub.run(f'{self.room}', 'Actuator', 'Light', value)
     
     def _setBlinds(self, value):
-        self.actuatorValues['Blinds'] = value
-        self.pub.run(f'{self.room}', 'Actuator', 'Blinds', value)
+        print(value)
+        print(self.actuatorValues['Blinds'])
+        if self.actuatorValues['Blinds'] != value:
+            self.actuatorValues['Blinds'] = value
+            self.pub.run(f'{self.room}', 'Actuator', 'Blinds', value)
         
        
     def _getHumidityInit(self):
         if float(self.sensorValues['Humidity_Sensor']) < self.thresholdValues['hum_lower']:
             return f'(hum_isGood {self.room})'
-        elif float(self.sensorValues['Humidity_Sensor']) < self.thresholdValues['temp_upper']:
+        elif float(self.sensorValues['Humidity_Sensor']) < self.thresholdValues['hum_upper']:
             return f'(hum_isMid {self.room})'
         else:
             return f'(hum_isBad {self.room})'
@@ -217,11 +233,13 @@ class AIPlannerInterface:
         
         
         inits = []
+        print('ACTUATOR INIT')
+        print(self.actuatorValues['Blinds'])
         if int(self.actuatorValues['Blinds']) == 1:
             inits.append(f'(blinds_down b{roomNr} {self.room})')
-        if int(self.actuatorValues['Lights']) == 1:
+        if not self.actuatorValues['Light'] == 'light_off' and (self.actuatorValues['Light'] == 'light_on' or int(self.actuatorValues['Light']) == 1):
            inits.append(f'(lighting_on l{roomNr} {self.room})')
-        if int(self.actuatorValues['AC']) == 1:
+        if not self.actuatorValues['AC'] == 'ac_off' and (self.actuatorValues['AC'] == 'ac_on' or int(self.actuatorValues['AC']) == 1):
             inits.append(f'(airConditioning_on ac{roomNr} {self.room})')
         if int(self.actuatorValues['Heater']) == 1:
             inits.append(f'(heater_on h{roomNr} {self.room})')
@@ -246,19 +264,33 @@ class AIPlannerInterface:
         if self.room == 'SR_1': roomNr = '1'
         elif self.room == 'SR_2': roomNr = '2'
         
-        if f'(hum_isGood {self.room})' in inits and f'(temp_isGood {self.room})' in inits: goals.append(f'(saveEnergy_acs {self.room})')
-        elif f'(hum_isGood {self.room})' not in inits: goals.append(f'(hum_isGood {self.room})')
-        elif f'(temp_isGood {self.room})' not in inits: goals.append(f'(temp_isGood {self.room})')
-        elif f'(temp_isGood {self.room})' in inits: goals.append(f'(saveEnergy_heater {self.room})')
+        if f'(outside_isVerySunny {self.room})' in inits and f'(blinds_down b{roomNr} {self.room})' not in inits: 
+            goals.append(f'(stopBrightness {self.room})')
+        elif f'(outside_isVerySunny {self.room})' not in inits and f'(outside_isDark {self.room})' not in inits and f'(blinds_down b{roomNr} {self.room})' in inits: 
+            goals.append(f'(saveEnergy_lights {self.room})')
+            goals.append(f'(inside_isLight {self.room})')
         
-        if f'(motion_detected {self.room})' in inits: goals.append(f'(inside_isLight {self.room})')
-        elif f'(motion_detected {self.room})' not in inits and f'(inside_isLight {self.room})' in inits: goals.append(f'(saveEnergy_lights {self.room})')
+        if f'(hum_isGood {self.room})' in inits and f'(temp_isGood {self.room})' in inits and f'(airConditioning_on ac{roomNr} {self.room})' in inits: goals.append(f'(saveEnergy_acs {self.room})')
+        elif f'(hum_isBad {self.room})' in inits: goals.append(f'(hum_isGood {self.room})')
+        elif f'(temp_isGood {self.room})' not in inits: goals.append(f'(temp_isGood {self.room})')
+        elif f'(temp_isGood {self.room})' in inits and f'(heater_on h{roomNr} {self.room})' in inits: goals.append(f'(saveEnergy_heater {self.room})')
+        
+        if (f'(inside_isLight {self.room})') not in inits and f'(lighting_on l{roomNr} {self.room})' not in inits: goals.append(f'(inside_isLight {self.room})')
+        # if (f'(outside_isVerySunny {self.room})' in inits or f'(outside_isDark {self.room})' in inits) and f'(lighting_on l{roomNr} {self.room})' not in inits: goals.append(f'(inside_isLight {self.room})')
+        
+        # if f'(motion_detected {self.room})' in inits: goals.append(f'(inside_isLight {self.room})')
+        # elif f'(motion_detected {self.room})' not in inits and f'(inside_isLight {self.room})' in inits: goals.append(f'(saveEnergy_lights {self.room})')
+        
         
         return goals
             
     def startPlanning(self):
         inits = self.getAIPlannerInits()
+        print('INITS: ')
+        print(inits)
         goals = self.getAIPlannerGoals(inits)
+        print('GOALS: ')
+        print(goals)
         
         self.createAIProblemFile(inits, goals)
         
@@ -287,9 +319,9 @@ class AIPlannerInterface:
         for step in steps:
             elements = step.split(' ')
             
-            if 'ON' in elements[0] or 'OPEN' in elements[0]:
+            if 'ON' in elements[0] or 'CLOSE' in elements[0]:
                 self.actions[elements[0]](1)
-            elif 'OFF' in elements[0] or 'CLOSE' in elements[0]:
+            elif 'OFF' in elements[0] or 'OPEN' in elements[0]:
                 self.actions[elements[0]](0)
                  
         
@@ -298,35 +330,39 @@ if __name__ == "__main__":
     planner.setInitialState()
     
     while True:
-        time1 = datetime.strptime(planner.time_toggleZeroDetected, '%H:%M:%S')
-        time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
-        difference = time2 - time1
+        if planner.time_toggleZeroDetected is not -1:
+            time1 = datetime.strptime(planner.time_toggleZeroDetected, '%H:%M:%S')
+            time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
+            difference = time2 - time1
+            difference = int(difference.total_seconds())
+        else:
+            difference = 0
         
         # if OPENING_HOUR.time() >= datetime.now().time() or datetime.now().time() >= CLOSING_HOUR.time():
         #     print('CLOSED')
         #     planner.setInitialState()
         
-        if planner.motionToggleOne or (planner.motionToggleZero and int(difference.total_seconds()) >= MAX_RANGE_MOTION_DETECTED): 
+        if (difference >= MAX_RANGE_MOTION_DETECTED) and planner.noReplannedSinceMaxRange: 
+            planner.sensorValues['Motion_Sensor'] = 0
+            print('MAX RANGE REACHED')
             print('REPLANNING')
-            print(planner.motionToggleOne)
-            print(planner.motionToggleZero)
             planner.startPlanning()
             time.sleep(5)
-            planner.motionToggleOne = False
-            planner.motionToggleZero = False
+            planner.noReplannedSinceMaxRange = False
             try: plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
-            except Exception as e: print(e)
+            except: pass
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
             print(planSteps)
             planner.executePlan(planSteps)
             
-        elif planner.sensorValues['Outside_Sensor'] == 2:
+        elif planner.replan:
             print('REPLANNING')
+            planner.replan = False
             planner.startPlanning()
             time.sleep(5)
             try: plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
-            except Exception as e: print(e)
+            except: pass
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
             print(planSteps)
@@ -337,7 +373,7 @@ if __name__ == "__main__":
             planner.startPlanning()
             time.sleep(5)
             try: plannerResponse = subprocess.check_output(["./runPlan.sh"]).decode("utf-8")
-            except Exception as e: print(e)
+            except: pass
             time.sleep(5)
             planSteps = planner.getPlanSteps(plannerResponse)
             print(planSteps)
