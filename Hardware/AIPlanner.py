@@ -100,6 +100,11 @@ class AIPlannerInterface:
         # On hardware updates
         res = eval(msg.payload.decode())
         
+        
+        
+        if 'Outside_Sensor' == res['Device']:
+                self.replan = True
+                
         if res['Device'] == 'Motion_Sensor':
             if res['Value'] == 1:
                 self.sensorValues[res['Device']] = 1
@@ -107,13 +112,8 @@ class AIPlannerInterface:
                 self.replan = True
             elif res['Value'] == 0 and self.sensorValues[res['Device']] == 1:
                 self.noReplannedSinceMaxRange = True
-                self.time_toggleZeroDetected = res['TimeStamp']
-        
-        if 'Outside_Sensor' == res['Device']:
-                self.replan = True
-                
-                
-        if 'Sensor' in res['Device']:
+                self.time_toggleZeroDetected = res['TimeStamp']        
+        elif 'Sensor' in res['Device']:
             self.sensorValues[res['Device']] = res['Value']
         elif 'Threshold_Low' in res['Device'] and 'Temp' in res['Device']:
             self.thresholdValues['temp_lower'] = float(res['Value'])
