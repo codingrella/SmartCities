@@ -266,11 +266,9 @@ class AIPlannerInterface:
         
         if f'(outside_isVerySunny {self.room})' in inits and f'(blinds_down b{roomNr} {self.room})' not in inits: 
             goals.append(f'(stopBrightness {self.room})')
-            goals.append(f'(inside_isLight {self.room})')
         elif f'(outside_isVerySunny {self.room})' not in inits and f'(outside_isDark {self.room})' not in inits: 
             goals.append(f'(saveEnergy_lights {self.room})')
             goals.append(f'(inside_isLight {self.room})')
-        elif f'(outside_isDark {self.room})' in inits: goals.append(f'(inside_isLight {self.room})')
         
         if f'(hum_isGood {self.room})' in inits and f'(temp_isGood {self.room})' in inits and f'(airConditioning_on ac{roomNr} {self.room})' in inits: goals.append(f'(saveEnergy_acs {self.room})')
         elif f'(hum_isBad {self.room})' in inits: goals.append(f'(hum_isGood {self.room})')
