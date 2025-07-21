@@ -103,7 +103,7 @@ class AIPlannerInterface:
         if res['Device'] == 'Motion_Sensor':
             if res['Value'] == 1:
                 self.sensorValues[res['Device']] = 1
-                self.time_toggleZeroDetected = None
+                self.time_toggleZeroDetected = -1
             elif res['Value'] == 0 and self.sensorValues[res['Device']] == 1:
                 self.noReplannedSinceMaxRange = True
                 self.time_toggleZeroDetected = res['TimeStamp']
@@ -184,8 +184,9 @@ class AIPlannerInterface:
         self.pub.run(f'{self.room}', 'Actuator', 'Light', value)
     
     def _setBlinds(self, value):
-        self.actuatorValues['Blinds'] = value
-        self.pub.run(f'{self.room}', 'Actuator', 'Blinds', value)
+        if self.actuatorValues['Blinds'] != value:
+            self.actuatorValues['Blinds'] = value
+            self.pub.run(f'{self.room}', 'Actuator', 'Blinds', value)
         
        
     def _getHumidityInit(self):
@@ -268,6 +269,10 @@ class AIPlannerInterface:
         elif f'(motion_detected {self.room})' not in inits and f'(inside_isLight {self.room})' in inits: goals.append(f'(saveEnergy_lights {self.room})')
         
         if f'(outside_isVerySunny {self.room})' in inits: goals.append(f'(stopBrightness {self.room})')
+        elif f'(outside_isVerySunny {self.room})' not in inits and f'(outside_isDark {self.room})' not in inits: 
+            goals.append(f'(saveEnergy_lights {self.room})')
+            goals.append(f'(inside_isLight {self.room})')
+        elif f'(outside_isDark {self.room})': goals.append(f'(inside_isLight {self.room})')
         
         return goals
             
@@ -317,7 +322,7 @@ if __name__ == "__main__":
     planner.setInitialState()
     
     while True:
-        if planner.time_toggleZeroDetected is not None:
+        if planner.time_toggleZeroDetected is not -1:
             time1 = datetime.strptime(planner.time_toggleZeroDetected, '%H:%M:%S')
             time2 = datetime.strptime(datetime.now().strftime("%H:%M:%S"), '%H:%M:%S')
             difference = time2 - time1
