@@ -61,7 +61,7 @@
 )
 
 (:action turnOnHeater
-    :parameters (?h -heater ?airConditioning -air ?r -room)
+    :parameters (?h -heater ?ac -airConditioning ?r -room)
     :precondition (and (not(heater_on ?h ?r))
                        (not (airConditioning_on ?ac ?r))
                        (temp_isCold ?r))
