@@ -104,6 +104,7 @@ class AIPlannerInterface:
             if res['Value'] == 1:
                 self.sensorValues[res['Device']] = 1
                 self.time_toggleZeroDetected = -1
+                self.replan = True
             elif res['Value'] == 0 and self.sensorValues[res['Device']] == 1:
                 self.noReplannedSinceMaxRange = True
                 self.time_toggleZeroDetected = res['TimeStamp']
