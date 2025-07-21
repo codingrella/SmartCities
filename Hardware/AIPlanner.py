@@ -183,6 +183,8 @@ class AIPlannerInterface:
         self.pub.run(f'{self.room}', 'Actuator', 'Light', value)
     
     def _setBlinds(self, value):
+        print(value)
+        print(self.actuatorValues['Blinds'])
         if self.actuatorValues['Blinds'] != value:
             self.actuatorValues['Blinds'] = value
             self.pub.run(f'{self.room}', 'Actuator', 'Blinds', value)
@@ -230,6 +232,8 @@ class AIPlannerInterface:
         
         
         inits = []
+        print('ACTUATOR INIT')
+        print(self.actuatorValues['Blinds'])
         if int(self.actuatorValues['Blinds']) == 1:
             inits.append(f'(blinds_down b{roomNr} {self.room})')
         if not self.actuatorValues['Light'] == 'light_off' and (self.actuatorValues['Light'] == 'light_on' or int(self.actuatorValues['Light']) == 1):
