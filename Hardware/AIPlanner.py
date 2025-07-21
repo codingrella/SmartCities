@@ -271,7 +271,11 @@ class AIPlannerInterface:
             
     def startPlanning(self):
         inits = self.getAIPlannerInits()
+        print('INITS: ')
+        print(inits)
         goals = self.getAIPlannerGoals(inits)
+        print('GOALS: ')
+        print(goals)
         
         self.createAIProblemFile(inits, goals)
         
@@ -301,10 +305,8 @@ class AIPlannerInterface:
             elements = step.split(' ')
             
             if 'ON' in elements[0] or 'OPEN' in elements[0]:
-                print(elements[0])
                 self.actions[elements[0]](1)
             elif 'OFF' in elements[0] or 'CLOSE' in elements[0]:
-                print(elements[0])
                 self.actions[elements[0]](0)
                  
         
