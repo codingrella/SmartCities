@@ -275,7 +275,7 @@ class AIPlannerInterface:
         elif f'(temp_isGood {self.room})' not in inits: goals.append(f'(temp_isGood {self.room})')
         elif f'(temp_isGood {self.room})' in inits and f'(heater_on h{roomNr} {self.room})' in inits: goals.append(f'(saveEnergy_heater {self.room})')
         
-        if (f'(inside_isLight {self.room})') not in inits: goals.append(f'(inside_isLight {self.room})')
+        if (f'(inside_isLight {self.room})') not in inits and f'(lighting_on l{roomNr} {self.room})' not in inits: goals.append(f'(inside_isLight {self.room})')
         # if (f'(outside_isVerySunny {self.room})' in inits or f'(outside_isDark {self.room})' in inits) and f'(lighting_on l{roomNr} {self.room})' not in inits: goals.append(f'(inside_isLight {self.room})')
         
         # if f'(motion_detected {self.room})' in inits: goals.append(f'(inside_isLight {self.room})')
