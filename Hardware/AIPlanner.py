@@ -105,14 +105,11 @@ class AIPlannerInterface:
                 self.sensorValues[res['Device']] = 1
                 self.time_toggleZeroDetected = None
             elif res['Value'] == 0 and self.sensorValues[res['Device']] == 1:
-                self.sensorValues[res['Device']] = 0
                 self.noReplannedSinceMaxRange = True
                 self.time_toggleZeroDetected = res['TimeStamp']
-            elif res['Value'] == 0:
-                self.sensorValues[res['Device']] = 0
         
         if 'Outside_Sensor' == res['Device']:
-            if res['Value'] == 2 or res['Value'] == 0:
+            if res['Value'] == '2' or res['Value'] == '0':
                 self.replan = True
                 
                 
@@ -329,6 +326,7 @@ if __name__ == "__main__":
         #     planner.setInitialState()
         
         if (difference >= MAX_RANGE_MOTION_DETECTED) and planner.noReplannedSinceMaxRange: 
+            planner.sensorValues['Motion_Sensor'] = 0
             print('MAX RANGE REACHED')
             print('REPLANNING')
             planner.startPlanning()
