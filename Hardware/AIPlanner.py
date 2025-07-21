@@ -109,7 +109,6 @@ class AIPlannerInterface:
                 self.time_toggleZeroDetected = res['TimeStamp']
         
         if 'Outside_Sensor' == res['Device']:
-            if res['Value'] == '2' or res['Value'] == '0':
                 self.replan = True
                 
                 
